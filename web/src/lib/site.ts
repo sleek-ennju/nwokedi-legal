@@ -14,15 +14,33 @@ export const site = {
   description:
     "Nwokedi Legal advises creators, founders and businesses on intellectual property, media and entertainment, corporate and commercial matters, and property in Nigeria.",
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
-  telephone: "",
+  telephone: process.env.NEXT_PUBLIC_PHONE ?? "",
+  /** direct lines shown beside the enquiry form (E.164, e.g. +2348012345678) */
+  contact: {
+    phone: process.env.NEXT_PUBLIC_PHONE ?? "",
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? process.env.NEXT_PUBLIC_PHONE ?? "",
+  },
   address: { locality: "", region: "", country: "NG" },
-  sameAs: [] as string[],
+  /**
+   * Social profiles — TODO(client): full profile URLs. Empty ones render as
+   * placeholders in the footer and are left out of the structured data.
+   */
+  social: {
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM ?? "",
+    linkedin: process.env.NEXT_PUBLIC_LINKEDIN ?? "",
+    x: process.env.NEXT_PUBLIC_X ?? "",
+    tiktok: process.env.NEXT_PUBLIC_TIKTOK ?? "",
+    youtube: process.env.NEXT_PUBLIC_YOUTUBE ?? "",
+  },
+  get sameAs(): string[] {
+    return Object.values(this.social).filter(Boolean);
+  },
   principal: {
     name: process.env.NEXT_PUBLIC_PRINCIPAL_NAME ?? "",
     jobTitle: "Principal",
     sameAs: [] as string[],
   },
-} as const;
+};
 
 export type Practice = {
   id: string;

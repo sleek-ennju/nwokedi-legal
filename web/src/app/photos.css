@@ -1,0 +1,771 @@
+/* Photo-led sections: The Principal (signature reveal), The Call (depth carousel), consult portrait.
+
+   Colour flow rule: navy and umber never mix in a gradient (that's what turned
+   muddy). The navy stage dims to a warm near-black ("lights down"); umber only
+   ever appears as LIGHT around her; the cream section then slides up as a sheet. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+:root {
+  --night: #0d0805; /* warm near-black: the room the photos are lit in */
+  --umber-1: #371a03; /* sampled from the portrait backdrop */
+  --umber-2: #5f360a;
+  --umber-glow: rgba(150, 88, 22, 0.55);
+}
+
+/* "lights down": the stage dims to night as The Principal arrives (driven by scroll) */
+.stage__dim {
+  position: absolute;
+  inset: 0;
+  background: var(--night);
+  opacity: var(--dim, 0);
+  pointer-events: none;
+}
+
+/* ───────── The Principal (signature: bring her into the light) ───────── */
+.principal {
+  position: relative;
+  padding: clamp(120px, 20vh, 220px) var(--gutter) clamp(100px, 14vh, 160px);
+}
+.principal::before {
+  /* night, with warm light pooled only around her.
+     Bleeds 3px past each side: at fractional DPRs a composited layer can land a
+     sub-pixel off and let the navy stage show through as a hairline. */
+  content: "";
+  position: absolute;
+  inset: 0 -3px;
+  background:
+    radial-gradient(42% 52% at 72% 52%, var(--umber-glow), transparent 72%),
+    var(--night);
+  /* top fades in over the (already dimmed) stage, so there is no seam */
+  -webkit-mask: linear-gradient(transparent 0, #000 min(26vh, 220px));
+  mask: linear-gradient(transparent 0, #000 min(26vh, 220px));
+  pointer-events: none;
+}
+.principal__inner {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
+}
+.principal__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(3rem, 6.6vw, 6.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.015em;
+}
+.principal__role {
+  margin: 14px 0 28px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+  color: #f1d9a8;
+}
+.principal__lead {
+  margin: 0 0 32px;
+  max-width: 40ch;
+  font-size: 17px;
+  color: rgba(233, 225, 206, 0.85);
+}
+.principal__facts {
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  max-width: 460px;
+}
+.principal__facts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 13px 0;
+  border-top: 1px solid rgba(233, 225, 206, 0.14);
+  font-size: 14px;
+}
+.principal__facts span {
+  color: rgba(233, 225, 206, 0.72);
+}
+.principal__facts b {
+  font-weight: 500;
+  text-align: right;
+}
+
+
+.principal__figure {
+  --lx: 42%;
+  --ly: 32%;
+  --lr: 26%;
+  position: relative;
+  aspect-ratio: 1760 / 2200;
+  max-height: 82svh;
+  justify-self: center;
+  width: 100%;
+  max-width: calc(82svh * 0.8);
+  /* the whole photo stays visible; only a thin feather softens its rectangle */
+  -webkit-mask:
+    linear-gradient(to bottom, transparent 0, #000 5%, #000 93%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(to bottom, transparent 0, #000 5%, #000 93%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-composite: intersect;
+}
+.principal__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.principal__img--dark {
+  filter: brightness(0.14) saturate(0.5) contrast(1.1);
+}
+.principal__img--lit {
+  -webkit-mask: radial-gradient(
+    circle at var(--lx) var(--ly),
+    #000 0,
+    #000 calc(var(--lr) * 0.42),
+    rgba(0, 0, 0, 0.55) calc(var(--lr) * 0.7),
+    transparent var(--lr)
+  );
+  mask: radial-gradient(
+    circle at var(--lx) var(--ly),
+    #000 0,
+    #000 calc(var(--lr) * 0.42),
+    rgba(0, 0, 0, 0.55) calc(var(--lr) * 0.7),
+    transparent var(--lr)
+  );
+}
+.principal__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--lx) var(--ly), rgba(255, 200, 110, 0.22), transparent calc(var(--lr) * 0.6));
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+@media (max-width: 760px) {
+  .principal {
+    padding-top: 96px;
+  }
+  /* on phones the photo sits above the text: keep the warm light behind HER only,
+     soft and small, so it never competes with the photo's own backdrop */
+  .principal::before {
+    background:
+      radial-gradient(80% 26% at 50% 24%, rgba(150, 88, 22, 0.22), transparent 70%),
+      var(--night);
+  }
+  .principal__inner {
+    grid-template-columns: 1fr;
+  }
+  .principal__figure {
+    order: -1;
+    max-height: none;
+    max-width: none;
+    /* the photo dissolves into the night before the copy begins */
+    -webkit-mask:
+      linear-gradient(to bottom, transparent 0, #000 7%, #000 72%, transparent 100%),
+      linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask:
+      linear-gradient(to bottom, transparent 0, #000 7%, #000 72%, transparent 100%),
+      linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+    mask-composite: intersect;
+  }
+}
+
+/* ───────── The Call (depth carousel) ───────── */
+.call {
+  position: relative;
+  height: 420vh;
+  background: var(--night);
+  box-shadow: 0 0 0 3px var(--night); /* same sub-pixel bleed as .principal */
+}
+.call__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+}
+.call__spot {
+  /* a pool of torchlight behind the portrait in front */
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: min(110vh, 1100px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: radial-gradient(circle, var(--umber-glow) 0%, rgba(95, 54, 10, 0.18) 38%, transparent 66%);
+  pointer-events: none;
+}
+.call__stage {
+  position: relative;
+  grid-area: 1 / 1;
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+  display: grid;
+  place-items: center;
+  padding-top: 40px;
+  touch-action: pan-y; /* vertical swipes scroll the page; horizontal ones drag the row */
+  cursor: grab;
+  user-select: none;
+}
+.call__stage:active {
+  cursor: grabbing;
+}
+.call__card {
+  --d: 0;
+  grid-area: 1 / 1;
+  position: relative;
+  margin: 0;
+  height: min(72svh, 760px);
+  aspect-ratio: 1760 / 2200;
+  border-radius: 3px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, filter;
+  /* depth of field: further from the front = softer and darker */
+  filter: blur(calc(var(--d) * 5px)) brightness(calc(1 - var(--d) * 0.5));
+  box-shadow:
+    0 50px 90px -30px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(241, 217, 168, calc(0.16 - var(--d) * 0.12));
+}
+.call__card img {
+  object-fit: cover;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* keeps the caption legible when a receding portrait passes behind it */
+.call__sticky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 150;
+  background: linear-gradient(90deg, rgba(13, 8, 5, 0.92) 0%, rgba(13, 8, 5, 0.6) 22%, transparent 42%);
+  pointer-events: none;
+}
+.call__copy {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(36px, 8vh, 72px);
+  max-width: 400px;
+  z-index: 200;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.6);
+}
+.call__beats {
+  position: relative;
+  min-height: 200px;
+}
+.call__beat {
+  position: absolute;
+  inset: 0 0 auto 0;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s var(--ease-out), transform 0.8s var(--ease-out);
+}
+.call__beat.is-active {
+  opacity: 1;
+  transform: none;
+}
+.call__title {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 4.6vw, 4.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+}
+.call__body {
+  margin: 0;
+  max-width: 32ch;
+  font-size: 16px;
+  color: rgba(233, 225, 206, 0.86);
+}
+.call__count b {
+  font-weight: 500;
+  color: var(--cream);
+}
+
+.call__thumbs {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(36px, 8vh, 72px);
+  z-index: 200;
+  display: flex;
+  gap: 10px;
+}
+.call__thumb {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(233, 225, 206, 0.6);
+  font: 500 10px/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.call__thumb img {
+  width: 44px;
+  height: 55px;
+  object-fit: cover;
+  border-radius: 2px;
+  opacity: 0.45;
+  outline: 1px solid transparent;
+  outline-offset: 3px;
+  transition: opacity 0.3s, outline-color 0.3s;
+}
+.call__thumb.is-active {
+  color: var(--cream);
+}
+.call__thumb.is-active img,
+.call__thumb:hover img {
+  opacity: 1;
+}
+.call__thumb.is-active img {
+  outline-color: var(--torch);
+}
+@media (max-width: 760px) {
+  .call__sticky {
+    grid-template-rows: 1fr auto;
+  }
+  .call__sticky::after {
+    background: linear-gradient(transparent 55%, rgba(13, 8, 5, 0.85) 75%);
+  }
+  .call__stage {
+    padding-top: 76px;
+    align-items: end;
+  }
+  .call__card {
+    height: min(60svh, calc(80vw * 1.25));
+    width: auto;
+  }
+  .call__spot {
+    top: 38%;
+  }
+  .call__copy {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    grid-row: 2;
+    padding: 0 var(--gutter) 40px;
+    max-width: none;
+  }
+  .call__beats {
+    min-height: 128px;
+  }
+  .call__title {
+    font-size: clamp(2.3rem, 10vw, 3rem);
+    margin-bottom: 8px;
+  }
+  .call__body {
+    font-size: 15px;
+  }
+
+}
+
+/* ───────── Vellum sheet: the cream section slides up over the night ───────── */
+.protect {
+  z-index: 2;
+  margin-top: -32px;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 -30px 80px rgba(0, 0, 0, 0.45);
+}
+
+/* ───────── Consultation: the person you'll speak to ───────── */
+.consult__portrait {
+  position: relative;
+  width: clamp(140px, 16vw, 200px);
+  aspect-ratio: 4 / 5;
+  margin: 0 0 32px;
+  overflow: hidden;
+  /* the brand shield as a frame */
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  background: var(--umber-1);
+}
+.consult__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.consult__with {
+  margin: -14px 0 0;
+  font-size: 14px;
+  color: rgba(22, 37, 61, 0.78);
+}
+
+/* thumbnails are a desktop affordance; on tablets and phones the counter and swipe carry it */
+@media (max-width: 1023px) {
+  .call__thumbs {
+    display: none;
+  }
+}
+
+/* ───────── Branded select ───────── */
+.select {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.select__label {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bronze-dk);
+}
+.select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0 12px;
+  font: 400 16px/1.4 var(--sans);
+  color: var(--navy);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(22, 37, 61, 0.3);
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.select__trigger:hover,
+.select.is-open .select__trigger {
+  border-bottom-color: var(--navy);
+}
+.select__trigger:focus-visible {
+  outline: none;
+  border-bottom-color: var(--navy);
+  box-shadow: 0 1px 0 0 var(--navy);
+}
+.select.is-invalid .select__trigger {
+  border-bottom-color: var(--seal);
+}
+.select__placeholder {
+  color: rgba(22, 37, 61, 0.72);
+}
+.select__chevron {
+  flex: none;
+  transition: transform 0.45s var(--ease-out);
+}
+.select.is-open .select__chevron {
+  transform: rotate(180deg);
+}
+.select__list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: -10px;
+  right: -10px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: rgba(250, 247, 240, 0.96);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(22, 37, 61, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 24px 50px -20px rgba(22, 37, 61, 0.45), 0 2px 6px rgba(22, 37, 61, 0.06);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity 0.22s ease, transform 0.35s var(--ease-out), visibility 0.35s;
+}
+.select.is-open .select__list {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 9px;
+  font-size: 15px;
+  color: var(--navy);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: background 0.2s, opacity 0.3s ease, transform 0.4s var(--ease-out);
+}
+.select.is-open .select__option {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s, calc(var(--i) * 25ms), calc(var(--i) * 25ms);
+}
+.select__option.is-active {
+  background: rgba(22, 37, 61, 0.06);
+}
+.select__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.select__text small {
+  font-size: 12px;
+  color: rgba(22, 37, 61, 0.62);
+}
+.select__check {
+  flex: none;
+  color: var(--bronze-dk);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.25s, transform 0.35s var(--ease-out);
+}
+.select__option[aria-selected="true"] {
+  font-weight: 500;
+}
+.select__option[aria-selected="true"] .select__check {
+  opacity: 1;
+  transform: none;
+}
+
+/* ───────── Direct lines (WhatsApp / call) ───────── */
+.direct {
+  margin-top: 36px;
+}
+.direct__title {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bronze-dk);
+}
+.direct__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  max-width: 440px;
+}
+.direct__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "icon text arrow" "icon note arrow";
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 2px;
+  padding: 16px 18px;
+  border: 1px solid rgba(22, 37, 61, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--navy);
+  text-decoration: none;
+  transition: border-color 0.35s, background 0.35s, transform 0.45s var(--ease-out), box-shadow 0.45s var(--ease-out);
+}
+a.direct__row:hover {
+  border-color: rgba(22, 37, 61, 0.28);
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -18px rgba(22, 37, 61, 0.4);
+}
+.direct__icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--cream);
+  transition: background 0.35s;
+}
+a.direct__row:hover .direct__icon {
+  background: var(--bronze-dk);
+}
+.direct__text {
+  grid-area: text;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 15px;
+}
+.direct__text b {
+  font-weight: 500;
+}
+.direct__text span {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.direct__note {
+  grid-area: note;
+  font-size: 13px;
+  color: rgba(22, 37, 61, 0.68);
+}
+.direct__arrow {
+  grid-area: arrow;
+  color: rgba(22, 37, 61, 0.5);
+  transition: transform 0.45s var(--ease-out), color 0.3s;
+}
+a.direct__row:hover .direct__arrow {
+  transform: translate(2px, -2px);
+  color: var(--navy);
+}
+.direct__row.is-pending {
+  cursor: default;
+}
+.direct__row.is-pending .direct__text span {
+  color: rgba(22, 37, 61, 0.7);
+}
+
+/* ───────── Footer ───────── */
+.foot {
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+  background: var(--night);
+  color: rgba(233, 225, 206, 0.78);
+  padding: clamp(72px, 12vh, 120px) var(--gutter) 0;
+  box-shadow: 0 0 0 3px var(--night);
+}
+.foot__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: 48px 40px;
+}
+.foot__brand img {
+  width: 220px;
+  height: auto;
+}
+.foot__tagline {
+  margin: 22px 0 0;
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.foot__head {
+  margin: 4px 0 18px;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bronze-lt);
+}
+.foot__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  font-size: 14px;
+}
+.foot__col a {
+  position: relative;
+  color: var(--cream);
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+  padding-bottom: 2px;
+  transition: background-size 0.5s var(--ease-out);
+}
+.foot__col a:hover {
+  background-size: 100% 1px;
+}
+.foot__soon em,
+.foot__pending {
+  color: rgba(233, 225, 206, 0.66);
+}
+.foot__soon em {
+  margin-left: 6px;
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 15px;
+}
+.foot__social {
+  display: flex !important;
+  gap: 10px !important;
+  margin-top: 26px !important;
+}
+.foot__social a,
+.foot__social span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(233, 225, 206, 0.16);
+  color: var(--cream);
+  background: none;
+  padding: 0;
+  transition: border-color 0.35s, background-color 0.35s, color 0.35s, transform 0.45s var(--ease-out);
+}
+.foot__social a:hover {
+  border-color: var(--torch);
+  color: var(--torch);
+  transform: translateY(-2px);
+}
+.foot__social .is-pending {
+  color: rgba(233, 225, 206, 0.4);
+  border-style: dashed;
+}
+.foot__base {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: clamp(56px, 9vh, 96px) auto 0;
+  padding: 22px 0;
+  border-top: 1px solid rgba(233, 225, 206, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 32px;
+  font-size: 12px;
+}
+.foot__base p {
+  margin: 0;
+}
+.foot__muted {
+  color: rgba(233, 225, 206, 0.66);
+}
+.foot__mark {
+  /* the wordmark, set into the ground like an inscription */
+  position: relative;
+  margin: 8px auto 0;
+  width: min(100%, 1400px);
+  aspect-ratio: 442 / 73;
+  -webkit-mask: url(/brand/nwokedi.svg) center / contain no-repeat;
+  mask: url(/brand/nwokedi.svg) center / contain no-repeat;
+  background: linear-gradient(180deg, rgba(233, 225, 206, 0.09), rgba(233, 225, 206, 0.015) 80%);
+  translate: 0 22%;
+}
+@media (max-width: 960px) {
+  .foot__inner {
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot__brand {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 520px) {
+  .foot__inner {
+    grid-template-columns: 1fr;
+  }
+}

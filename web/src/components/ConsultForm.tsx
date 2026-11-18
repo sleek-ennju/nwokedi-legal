@@ -3,6 +3,7 @@
 import { useActionState, useRef } from "react";
 import { submitConsultation, type ConsultState } from "@/app/actions/consult";
 import { practices } from "@/lib/site";
+import Select from "./Select";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
@@ -65,18 +66,19 @@ export default function ConsultForm() {
         {err.phone && <p className="field__err" id="phone-err">{err.phone}</p>}
       </div>
       <div className="field">
-        <label htmlFor="c-practice">Area</label>
-        <select id="c-practice" name="practice" defaultValue={v.practice ?? ""} required {...field("practice")}>
-          <option value="" disabled>
-            Choose one
-          </option>
-          {practices.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-          <option value="not-sure">Not sure yet</option>
-        </select>
+        <Select
+          key={v.practice ?? "none"}
+          id="c-practice"
+          name="practice"
+          label="Area"
+          defaultValue={v.practice ?? ""}
+          invalid={Boolean(err.practice)}
+          describedBy={err.practice ? "practice-err" : undefined}
+          options={[
+            ...practices.map((p) => ({ value: p.id, label: p.name })),
+            { value: "not-sure", label: "Not sure yet", hint: "We'll point you the right way" },
+          ]}
+        />
         {err.practice && <p className="field__err" id="practice-err">{err.practice}</p>}
       </div>
       <div className="field field--wide">

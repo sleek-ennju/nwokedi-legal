@@ -35,7 +35,9 @@
   box-sizing: border-box;
 }
 html {
-  background: var(--ink);
+  /* warm near-black base (= --night): anything that ever peeks through matches the dark sections */
+  background: #0d0805;
+  scrollbar-color: rgba(233, 225, 206, 0.28) #0d0805;
   color: var(--cream);
   -webkit-text-size-adjust: 100%;
 }
@@ -173,26 +175,42 @@ a {
   mix-blend-mode: normal;
 }
 .nav::before {
+  /* a quiet pane of glass: present enough to separate the nav, never loud */
   content: "";
   position: absolute;
-  inset: 0 0 -30px 0;
+  inset: 10px calc(var(--gutter) - 14px);
   z-index: -1;
-  background: linear-gradient(rgba(11, 19, 34, 0.92), rgba(11, 19, 34, 0));
+  border-radius: 18px;
+  background: rgba(14, 12, 12, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45);
   opacity: 0;
-  transition: opacity 0.5s;
+  transform: translateY(-6px) scale(0.985);
+  transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out), background 0.5s, border-color 0.5s;
 }
 .nav--scrolled::before {
   opacity: 1;
+  transform: none;
+  /* the blur only exists while the glass is showing: a backdrop-filter over the
+     animating 3D canvas re-blurs every frame, so it must not run when invisible */
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
 }
 .nav--ink {
   color: var(--navy);
 }
 .nav--ink::before {
-  background: linear-gradient(rgba(233, 225, 206, 0.95), rgba(233, 225, 206, 0));
+  background: rgba(246, 242, 233, 0.55);
+  border-color: rgba(22, 37, 61, 0.08);
+  box-shadow: 0 10px 30px -14px rgba(22, 37, 61, 0.25);
 }
 .nav--ink .nav__cta {
-  border-color: rgba(22, 37, 61, 0.25);
-  background: rgba(233, 225, 206, 0.5);
+  border-color: rgba(22, 37, 61, 0.2);
+  background: rgba(255, 255, 255, 0.35);
+}
+.nav--scrolled .nav__cta {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .nav__brand {
   display: grid;
@@ -219,9 +237,27 @@ a {
   text-transform: uppercase;
 }
 .nav__links a {
+  position: relative;
   text-decoration: none;
   opacity: 0.82;
   transition: opacity 0.3s;
+}
+.nav__links a:not(.nav__cta)::after {
+  /* hairline that draws in from the left */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease-out);
+}
+.nav__links a:not(.nav__cta):hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 .nav__links a:hover {
   opacity: 1;
@@ -234,8 +270,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   opacity: 1 !important;
-  backdrop-filter: blur(8px);
-  background: rgba(11, 19, 34, 0.35);
+  background: rgba(11, 19, 34, 0.5);
 }
 .seal-dot {
   width: 7px;
@@ -336,25 +371,6 @@ em {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--bronze-lt);
 }
-.hero__hint {
-  position: absolute;
-  top: 50%;
-  right: var(--gutter);
-  writing-mode: vertical-rl;
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(233, 225, 206, 0.66);
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  translate: 0 -50%;
-}
-.hero__hint span {
-  width: 1px;
-  height: 48px;
-  background: linear-gradient(var(--torch), transparent);
-}
 @media (max-width: 760px) {
   .hero {
     grid-template-columns: 1fr;
@@ -368,9 +384,6 @@ em {
   }
   .display {
     font-size: clamp(2.7rem, 12.5vw, 4rem);
-  }
-  .hero__hint {
-    display: none;
   }
 }
 
@@ -655,28 +668,6 @@ a:focus-visible {
   transform: scale(0.97);
 }
 
-/* ───────── Footer ───────── */
-.foot {
-  position: relative;
-  z-index: 10;
-  background: var(--ink);
-  border-top: 1px solid var(--line);
-  padding: 40px var(--gutter);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 28px;
-  align-items: center;
-  font-size: 13px;
-  color: rgba(233, 225, 206, 0.7);
-}
-.foot p {
-  margin: 0;
-}
-.foot__muted {
-  margin-left: auto !important;
-  color: rgba(233, 225, 206, 0.66);
-}
-
 /* Entrances are pure CSS so they never wait on JavaScript.
    The h1 is deliberately NOT animated: it is the LCP element. */
 .fade-in {
@@ -836,34 +827,8 @@ a:focus-visible {
   }
 }
 
-/* ───────── iOS: tilt permission ───────── */
-.tilt-btn {
-  display: none;
-  position: absolute;
-  right: var(--gutter);
-  top: 92px;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(11, 19, 34, 0.4);
-  color: var(--cream);
-  font: 500 12px/1 var(--sans);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  backdrop-filter: blur(8px);
-}
-.can-tilt .tilt-btn {
-  display: inline-flex;
-}
-@media (max-width: 760px) {
-  /* in the text flow under the intro copy, clear of the shield */
-  .tilt-btn {
-    position: static;
-    justify-self: start;
-  }
-}
+
+
 
 /* the first chapter is visible before JS runs; without JS, all chapters stack */
 .no-js .chapters {
@@ -886,4 +851,77 @@ a:focus-visible {
 }
 .no-js .chapter > * {
   transform: none;
+}
+
+/* ───────── Hover craft: subtle, tactile, never loud ───────── */
+.button,
+.nav__cta {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.45s var(--ease-out), box-shadow 0.45s var(--ease-out), background-color 0.3s;
+}
+.button::after,
+.nav__cta::after {
+  /* a soft sheen that crosses the pill once on hover */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 236, 200, 0.28) 48%, transparent 66%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.button:hover::after,
+.nav__cta:hover::after {
+  transform: translateX(120%);
+  transition: transform 0.9s var(--ease-out);
+}
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -14px rgba(11, 19, 34, 0.55);
+}
+.seal-dot {
+  transition: box-shadow 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+}
+.button:hover .seal-dot,
+.nav__cta:hover .seal-dot,
+.chip:hover .seal-dot {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgba(198, 28, 35, 0.2), 0 0 14px 2px rgba(237, 175, 36, 0.45);
+}
+.textlink {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+  transition: background-size 0.5s var(--ease-out), border-color 0.3s;
+}
+.textlink:hover {
+  background-size: 100% 1px;
+  border-bottom-color: transparent;
+}
+.chip {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.chip::before {
+  /* ink rises from the bottom on hover */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(22, 37, 61, 0.06);
+  transform: translateY(101%);
+  transition: transform 0.45s var(--ease-out);
+}
+.chip:hover::before {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .button::after,
+  .nav__cta::after {
+    display: none;
+  }
+  .button:hover {
+    transform: none;
+  }
 }

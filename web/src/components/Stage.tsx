@@ -45,6 +45,7 @@ export default function Stage() {
       <canvas ref={canvas} className="gl" />
       {/* eslint-disable-next-line @next/next/no-img-element -- decorative SVG, no optimisation needed */}
       <img className="fallback" src="/brand/emblem.svg" alt="" width="287" height="374" />
+      <div className="stage__dim" />
     </div>
   );
 }

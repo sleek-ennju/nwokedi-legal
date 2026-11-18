@@ -52,11 +52,15 @@ export function initScroll() {
     P.lastMove = performance.now();
   };
   addEventListener("pointermove", (e) => onPoint(e.clientX, e.clientY), { passive: true });
+  addEventListener("touchmove", (e) => onPoint(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
   // ── nav theming ──
   const nav = document.querySelector(".nav");
   if (nav) {
-    ScrollTrigger.create({ start: 80, end: "max", toggleClass: { targets: nav, className: "nav--scrolled" } });
+    // a plain scroll check (a ScrollTrigger range ending at "max" switches off at the very bottom)
+    const glass = () => nav.classList.toggle("nav--scrolled", scrollY > 80);
+    addEventListener("scroll", glass, { passive: true });
+    glass();
     gsap.utils.toArray<HTMLElement>("[data-theme='light']").forEach((sec) =>
       ScrollTrigger.create({
         trigger: sec,
@@ -67,9 +71,9 @@ export function initScroll() {
     );
   }
 
-  // ── stage is fully covered by a light section → WebGL can skip frames ──
+  // ── stage is fully covered by an opaque section → WebGL can skip frames ──
   let coveredCount = 0;
-  gsap.utils.toArray<HTMLElement>("[data-theme='light']").forEach((sec) =>
+  gsap.utils.toArray<HTMLElement>("[data-cover]").forEach((sec) =>
     ScrollTrigger.create({
       trigger: sec,
       start: "top top",
@@ -100,6 +104,9 @@ export function initScroll() {
   setActive(0);
   active = -2;
 
+  const stageEl = document.querySelector<HTMLElement>(".stage");
+  // lights go down for the portrait sections, and come back up for the bookend
+  const setDim = () => stageEl?.style.setProperty("--dim", (K.lift * (1 - K.cta)).toFixed(3));
   const mm = gsap.matchMedia();
   mm.add({ desktop: "(min-width: 760px)", phone: "(max-width: 759px)" }, (ctx) => {
     const phone = ctx.conditions!.phone;
@@ -138,12 +145,18 @@ export function initScroll() {
     gsap.fromTo(
       K,
       { lift: 0 },
-      { lift: 1, ease: "none", scrollTrigger: { trigger: ".protect", start: "top bottom", end: "top top", scrub: 1 } }
+      {
+        lift: 1,
+        ease: "none",
+        // "lights down": the stage dims to night as the shield lifts away
+        onUpdate: setDim,
+        scrollTrigger: { trigger: ".principal", start: "top bottom", end: "top top", scrub: 1 },
+      }
     );
     gsap.fromTo(
       K,
       { cta: 0 },
-      { cta: 1, ease: "none", scrollTrigger: { trigger: ".bookend", start: "top bottom", end: "top top", scrub: 1 } }
+      { cta: 1, ease: "none", onUpdate: setDim, scrollTrigger: { trigger: ".bookend", start: "top bottom", end: "top top", scrub: 1 } }
     );
     gsap.to(".mark", {
       opacity: 0,
@@ -152,8 +165,9 @@ export function initScroll() {
     });
   });
 
-  // phones: tilt the device to move the light (Android grants this silently;
-  // iOS needs a tap — wired to the "Hold the light" button in the hero)
+  // phones: tilt the device to move the light. Android grants this silently.
+  // iOS needs a user gesture, so access is requested the first time someone
+  // touches the hero or her portrait — a gem found by interacting, never announced.
   const onTilt = (e: DeviceOrientationEvent) => {
     if (e.gamma == null || e.beta == null) return;
     P.tx = gsap.utils.clamp(-1, 1, e.gamma / 30);
@@ -165,17 +179,19 @@ export function initScroll() {
   const needsPermission = typeof DOE?.requestPermission === "function";
   const touch = matchMedia("(pointer: coarse)").matches;
   if (touch && DOE && !needsPermission) addEventListener("deviceorientation", onTilt, { passive: true });
-  if (touch && needsPermission) root.classList.add("can-tilt");
-  document.querySelector(".tilt-btn")?.addEventListener("click", async () => {
-    try {
-      if ((await DOE!.requestPermission!()) === "granted") {
-        addEventListener("deviceorientation", onTilt, { passive: true });
-        root.classList.remove("can-tilt");
+  if (touch && needsPermission) {
+    const ask = async (e: Event) => {
+      if (!(e.target as Element).closest?.(".hero, .principal__figure")) return;
+      removeEventListener("click", ask);
+      try {
+        if ((await DOE!.requestPermission!()) === "granted")
+          addEventListener("deviceorientation", onTilt, { passive: true });
+      } catch {
+        /* declined: touch-drag still moves the light */
       }
-    } catch {
-      /* user declined: drag still moves the light */
-    }
-  });
+    };
+    addEventListener("click", ask);
+  }
 
   return { lenis };
 }

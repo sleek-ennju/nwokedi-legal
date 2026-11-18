@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { site } from "@/lib/site";
 import { serializeJsonLd, siteGraph } from "@/lib/jsonld";
 import "./globals.css";
+import "./photos.css";
 
 // Display serif stand-in until the licensed Agatho webfont arrives (BRAND_DOSSIER §11.3)
 const serif = Cormorant_Garamond({

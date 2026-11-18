@@ -168,7 +168,17 @@ Every screen is tested on a real mid-range Android and an iPhone, not only an em
 
 ---
 
-## 8. Waiting on the photos
+## 8. Photos: built 18 Nov
+
+Built from the four studio portraits (`web/src/assets/photos/`):
+- **The Principal, the signature move.** Her portrait ("gaze": arms folded, looking up toward the light) waits in darkness. The visitor's light (pointer on desktop, **phone tilt** on mobile) brings her out of it, and scrolling widens the light until she is fully lit. The layout puts her gaze toward her name and the copy.
+- **The Call (v2, 18 Nov).** A depth carousel inspired by the "Try the Look" orbit reference: three full-length portraits on a concave arc. The front one is sharp and spotlit, the others recede (blurred, dimmed). Scroll, drag/swipe or tap the thumbnails to move. Every photo is always shown whole (v1 cropped her head under heavy masks).
+- **Colour flow rule.** Navy never blends into umber. The stage dims to warm near-black ("lights down"), umber appears only as light around her, and the cream section slides up as a rounded sheet.
+- **Consultation.** A head-and-shoulders portrait clipped to the **brand shield shape**: "You'll hear back from the principal directly."
+- Section backgrounds are sampled from the photo backdrop (`--umber-*`), and photo edges are feathered, so the photos sit in the page with no visible frame.
+- **Draft copy needing her approval:** the bio line, the three Call captions, and her name (shows "The Principal" until `NEXT_PUBLIC_PRINCIPAL_NAME` is set).
+
+### Original brief for this section
 
 When the new professional shoot arrives:
 - **About the Principal**: her portrait cut out from the backdrop and placed in an umber "torchlit" section that matches the photo's warm lighting, with a light reveal as you scroll in.

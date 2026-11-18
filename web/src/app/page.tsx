@@ -1,6 +1,13 @@
+import { Suspense } from "react";
 import Stage from "@/components/Stage";
 import ProtectPicker from "@/components/ProtectPicker";
 import ConsultForm from "@/components/ConsultForm";
+import DirectContact from "@/components/DirectContact";
+import Footer from "@/components/Footer";
+import Principal from "@/components/Principal";
+import TheCall from "@/components/TheCall";
+import Image from "next/image";
+import portrait from "@/assets/photos/gaze-portrait.jpg";
 import { practices, site } from "@/lib/site";
 
 export default function Home() {
@@ -17,6 +24,7 @@ export default function Home() {
         </a>
         <nav className="nav__links" aria-label="Primary">
           <a href="#practice">Practice</a>
+          <a href="#principal">The Principal</a>
           <a href="#protect">Find your counsel</a>
           <a href="#consult" className="nav__cta">
             <span className="seal-dot" />
@@ -45,14 +53,6 @@ export default function Home() {
               Explore the practice <span aria-hidden="true">↓</span>
             </a>
           </div>
-          <div className="hero__hint fade-in" aria-hidden="true">
-            <span />
-            Move to hold the light
-          </div>
-          <button className="tilt-btn" type="button">
-            <span className="seal-dot" />
-            Tilt to hold the light
-          </button>
         </section>
 
         {/* PRACTICE CHAPTERS */}
@@ -81,14 +81,23 @@ export default function Home() {
           </div>
         </section>
 
+        {/* THE PRINCIPAL — the signature move: bring her into the light */}
+        <Principal />
+
+        {/* THE CALL — a scroll-scrubbed robing sequence */}
+        <TheCall />
+
         {/* WHAT ARE YOU PROTECTING? */}
-        <section className="protect" id="protect" data-theme="light">
+        <section className="protect" id="protect" data-theme="light" data-cover>
           <div className="protect__inner">
             <p className="eyebrow eyebrow--ink">Find your counsel</p>
             <h2 className="protect__title">
               What are you <em>protecting?</em>
             </h2>
-            <ProtectPicker />
+            {/* Suspense boundaries let React hydrate below-the-fold islands in separate, short tasks */}
+            <Suspense fallback={null}>
+              <ProtectPicker />
+            </Suspense>
           </div>
         </section>
 
@@ -108,9 +117,12 @@ export default function Home() {
         </section>
 
         {/* CONSULTATION — a letter on vellum */}
-        <section className="consult" id="consult" data-theme="light" aria-labelledby="consult-title">
+        <section className="consult" id="consult" data-theme="light" data-cover aria-labelledby="consult-title">
           <div className="consult__inner">
             <div className="consult__intro">
+              <div className="consult__portrait">
+                <Image src={portrait} alt="" placeholder="blur" fill sizes="200px" />
+              </div>
               <p className="eyebrow eyebrow--ink">Request a consultation</p>
               <h2 className="consult__title" id="consult-title">
                 Tell us <em>what you need.</em>
@@ -118,20 +130,17 @@ export default function Home() {
               <p>
                 A few lines are enough. We&apos;ll come back to you with next steps and, where it helps, a time to speak.
               </p>
+              <p className="consult__with">You&apos;ll hear back from the principal directly.</p>
+              <DirectContact />
             </div>
-            <ConsultForm />
+            <Suspense fallback={null}>
+              <ConsultForm />
+            </Suspense>
           </div>
         </section>
       </main>
 
-      <footer className="foot">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/emblem.svg" alt="" width="34" height="44" loading="lazy" />
-        <p>
-          © {site.name}. {site.tagline}.
-        </p>
-        <p className="foot__muted">This website is for general information only and is not legal advice.</p>
-      </footer>
+      <Footer />
     </>
   );
 }
