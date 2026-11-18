@@ -193,7 +193,7 @@ When the new professional shoot arrives:
 | Phase | Deliverable |
 |---|---|
 | **1. Foundation** | Port the prototype to Next.js, fix the LCP issue, adaptive quality, SEO scaffolding (metadata, schema, sitemap), consultation form, Lighthouse CI **✅ Done 18 Nov.** Mobile Lighthouse with full 3D: Perf 97–99, A11y/BP/SEO 100. The 3D renders in a Web Worker (OffscreenCanvas). |
-| **2. Bookstore** | Catalogue, book page with the 3D book, sample reader, Paystack checkout (test mode), webhook, email delivery, download links |
+| **2. Bookstore** | **2a ✅ 18 Nov:** `/books` catalogue (CSS-3D books on a shelf), `/books/[slug]` (draggable 3D book, ₦/$ toggle, page-turn sample reader), checkout sheet → server action → Paystack hosted checkout (test-mode fallback in dev), `/checkout/success` with server-side verification, cookieless funnel events (`/api/events`), Book + Offer + Breadcrumb schema, sitemap. Mobile Lighthouse 100 on every category. **2b next:** orders DB + webhook + emailed download links (needs Supabase, Paystack, Resend accounts). |
 | **3. Admin** | Login, books, orders (with resend), customers, enquiries, insights |
 | **4. Photos + signature** | About section, gyroscope light, final motion polish |
 | **5. Launch** | Domain, Paystack live mode, Search Console, Google Business Profile, real-device QA, final Lighthouse audit |

@@ -34,9 +34,9 @@ export function initScroll() {
     root.classList.add("lenis");
   }
 
-  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) =>
+  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]').forEach((a) =>
     a.addEventListener("click", (e) => {
-      const id = a.getAttribute("href")!;
+      const id = a.getAttribute("href")!.replace(/^\//, "");
       const el = id.length > 1 ? document.querySelector<HTMLElement>(id) : null;
       if (!el) return;
       e.preventDefault();
@@ -57,10 +57,6 @@ export function initScroll() {
   // ── nav theming ──
   const nav = document.querySelector(".nav");
   if (nav) {
-    // a plain scroll check (a ScrollTrigger range ending at "max" switches off at the very bottom)
-    const glass = () => nav.classList.toggle("nav--scrolled", scrollY > 80);
-    addEventListener("scroll", glass, { passive: true });
-    glass();
     gsap.utils.toArray<HTMLElement>("[data-theme='light']").forEach((sec) =>
       ScrollTrigger.create({
         trigger: sec,

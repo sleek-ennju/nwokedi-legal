@@ -4,6 +4,7 @@ import ProtectPicker from "@/components/ProtectPicker";
 import ConsultForm from "@/components/ConsultForm";
 import DirectContact from "@/components/DirectContact";
 import Footer from "@/components/Footer";
+import Nav from "@/components/Nav";
 import Principal from "@/components/Principal";
 import TheCall from "@/components/TheCall";
 import Image from "next/image";
@@ -15,23 +16,7 @@ export default function Home() {
     <>
       <Stage />
 
-      <header className="nav">
-        <a className="nav__brand" href="#top" aria-label={`${site.name}, home`}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- tiny SVG logo */}
-          <img className="logo-cream" src="/brand/lockup.svg" alt={site.name} width="190" height="33" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="logo-ink" src="/brand/lockup-ink.svg" alt="" width="190" height="33" />
-        </a>
-        <nav className="nav__links" aria-label="Primary">
-          <a href="#practice">Practice</a>
-          <a href="#principal">The Principal</a>
-          <a href="#protect">Find your counsel</a>
-          <a href="#consult" className="nav__cta">
-            <span className="seal-dot" />
-            Consultation
-          </a>
-        </nav>
-      </header>
+      <Nav />
 
       <main>
         {/* HERO — the h1 is static HTML and paints immediately (it is the LCP element) */}

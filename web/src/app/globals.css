@@ -38,6 +38,8 @@ html {
   /* warm near-black base (= --night): anything that ever peeks through matches the dark sections */
   background: #0d0805;
   scrollbar-color: rgba(233, 225, 206, 0.28) #0d0805;
+  /* the dark sections bleed 3px past the edges (sub-pixel seam fix); clip so that never scrolls */
+  overflow-x: clip;
   color: var(--cream);
   -webkit-text-size-adjust: 100%;
 }
@@ -255,6 +257,9 @@ a {
   transform-origin: right;
   transition: transform 0.45s var(--ease-out);
 }
+.nav__links a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
 .nav__links a:not(.nav__cta):hover::after {
   transform: scaleX(1);
   transform-origin: left;
@@ -280,8 +285,19 @@ a {
   box-shadow: 0 0 0 4px rgba(198, 28, 35, 0.18);
 }
 @media (max-width: 760px) {
-  .nav__links a:not(.nav__cta) {
+  .nav__links a:not(.nav__cta):not([href="/books"]) {
     display: none;
+  }
+  .nav__links {
+    gap: 14px;
+    font-size: 12px;
+  }
+  .nav__brand img {
+    width: 124px;
+  }
+  .nav__cta {
+    padding: 9px 13px;
+    gap: 8px;
   }
 }
 

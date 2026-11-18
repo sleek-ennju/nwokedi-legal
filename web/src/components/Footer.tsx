@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-html-link-for-pages --
+   Deliberate full-document links: the home page boots a WebGL worker and a scroll
+   timeline once per document, so entering/leaving it must be a real page load. */
 import { practices, site } from "@/lib/site";
 
 type Social = { key: keyof typeof site.social; label: string; path: React.ReactNode };
@@ -73,7 +76,7 @@ export default function Footer() {
           <ul>
             {practices.map((p) => (
               <li key={p.id}>
-                <a href={`#${p.id}`}>{p.name}</a>
+                <a href={`/#${p.id}`}>{p.name}</a>
               </li>
             ))}
           </ul>
@@ -83,18 +86,16 @@ export default function Footer() {
           <p className="foot__head">The firm</p>
           <ul>
             <li>
-              <a href="#principal">The Principal</a>
+              <a href="/#principal">The Principal</a>
             </li>
             <li>
-              <a href="#protect">Find your counsel</a>
+              <a href="/#protect">Find your counsel</a>
             </li>
             <li>
-              <a href="#consult">Request a consultation</a>
+              <a href="/#consult">Request a consultation</a>
             </li>
             <li>
-              <span className="foot__soon">
-                Books <em>coming soon</em>
-              </span>
+              <a href="/books">Books</a>
             </li>
           </ul>
         </nav>
