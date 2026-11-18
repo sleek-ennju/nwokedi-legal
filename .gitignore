@@ -1,0 +1,12 @@
+node_modules/
+.next/
+dist/
+out/
+.lighthouseci/
+.env*
+!.env.example
+*.zip
+__MACOSX/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts

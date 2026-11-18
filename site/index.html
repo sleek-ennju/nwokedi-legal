@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" class="is-loading">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Nwokedi Legal — Barristers &amp; Solicitors</title>
+    <meta
+      name="description"
+      content="Nwokedi Legal advises on intellectual property, media and entertainment, corporate and commercial matters, and property."
+    />
+    <meta name="theme-color" content="#16253D" />
+    <link rel="icon" type="image/svg+xml" href="/brand/emblem.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Grotesk:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Fixed 3D stage: wordmark behind, shield in front -->
+    <div class="stage" aria-hidden="true">
+      <div class="stage__vignette"></div>
+      <div class="mark">
+        <div class="mark__base"></div>
+        <div class="mark__lit"></div>
+      </div>
+      <div class="torchglow"></div>
+      <canvas id="gl"></canvas>
+      <img class="fallback" src="/brand/emblem.svg" alt="" />
+    </div>
+
+    <header class="nav" data-intro>
+      <a class="nav__brand" href="#top" aria-label="Nwokedi Legal, home">
+        <img class="logo-cream" src="/brand/lockup.svg" alt="Nwokedi Legal" width="190" height="33" />
+        <img class="logo-ink" src="/brand/lockup-ink.svg" alt="" width="190" height="33" />
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#practice">Practice</a>
+        <a href="#protect">Find your counsel</a>
+        <a href="#contact" class="nav__cta"><span class="seal-dot"></span>Consultation</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero" id="top">
+        <div class="hero__copy">
+          <p class="eyebrow" data-intro>Barristers &amp; Solicitors · Est. 2025</p>
+          <h1 class="display">
+            <span class="line"><span>Bringing</span></span>
+            <span class="line"><span><em class="lit">to light</em> what</span></span>
+            <span class="line"><span>is yours.</span></span>
+          </h1>
+        </div>
+        <div class="hero__aside" data-intro>
+          <p>
+            Counsel in intellectual property, media &amp; entertainment, corporate &amp; commercial
+            work, and property — for the people and businesses who make things worth protecting.
+          </p>
+          <a class="textlink" href="#practice">Explore the practice <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero__hint" data-intro><span></span>Move to hold the light</div>
+      </section>
+
+      <!-- PRACTICE CHAPTERS -->
+      <section class="chapters" id="practice" aria-label="Practice areas">
+        <div class="chapters__sticky">
+          <div class="rail" aria-hidden="true"><span class="rail__fill"></span></div>
+          <div class="chapters__panels">
+            <article class="chapter" id="ch-ip" data-index="0">
+              <p class="eyebrow"><b>01</b> / 04 · Practice</p>
+              <h2>Intellectual Property</h2>
+              <p class="chapter__tag">Your ideas, on the record.</p>
+              <p class="chapter__body">
+                Trademarks, copyright, patents and designs — searched, registered, licensed and
+                enforced, so the value you create stays yours.
+              </p>
+              <ul class="chapter__list">
+                <li>Trademark &amp; brand protection</li>
+                <li>Copyright &amp; licensing</li>
+                <li>Patents &amp; industrial designs</li>
+                <li>Infringement &amp; enforcement</li>
+              </ul>
+            </article>
+            <article class="chapter" id="ch-media" data-index="1">
+              <p class="eyebrow"><b>02</b> / 04 · Practice</p>
+              <h2>Media &amp; Entertainment</h2>
+              <p class="chapter__tag">The deal behind the art.</p>
+              <p class="chapter__body">
+                Music, film, publishing and talent — the agreements that decide who owns the work,
+                who gets paid, and for how long.
+              </p>
+              <ul class="chapter__list">
+                <li>Recording &amp; publishing agreements</li>
+                <li>Film, TV &amp; content production</li>
+                <li>Talent &amp; management contracts</li>
+                <li>Brand partnerships &amp; endorsements</li>
+              </ul>
+            </article>
+            <article class="chapter" id="ch-corporate" data-index="2">
+              <p class="eyebrow"><b>03</b> / 04 · Practice</p>
+              <h2>Corporate &amp; Commercial</h2>
+              <p class="chapter__tag">Structure that holds.</p>
+              <p class="chapter__body">
+                From incorporation to the contracts you sign every week — governance, compliance and
+                transactions built to last.
+              </p>
+              <ul class="chapter__list">
+                <li>Company formation &amp; governance</li>
+                <li>Commercial contracts</li>
+                <li>Regulatory compliance</li>
+                <li>Investment &amp; transactions</li>
+              </ul>
+            </article>
+            <article class="chapter" id="ch-property" data-index="3">
+              <p class="eyebrow"><b>04</b> / 04 · Practice</p>
+              <h2>Property</h2>
+              <p class="chapter__tag">Ground you can stand on.</p>
+              <p class="chapter__body">
+                Acquisitions, leases and title — verified before you commit, and defended if it is
+                ever questioned.
+              </p>
+              <ul class="chapter__list">
+                <li>Acquisitions &amp; sales</li>
+                <li>Title verification &amp; due diligence</li>
+                <li>Leases &amp; tenancy</li>
+                <li>Property disputes</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- WHAT ARE YOU PROTECTING? -->
+      <section class="protect" id="protect">
+        <div class="protect__inner">
+          <p class="eyebrow eyebrow--ink">Find your counsel</p>
+          <h2 class="protect__title">What are you <em>protecting?</em></h2>
+          <div class="chips" role="group" aria-label="Choose what you are protecting">
+            <button class="chip" data-to="0" data-what="a name or a logo">A name or a logo</button>
+            <button class="chip" data-to="1" data-what="a song, a film or a show">A song, a film or a show</button>
+            <button class="chip" data-to="2" data-what="a company">A company</button>
+            <button class="chip" data-to="3" data-what="land or a building">Land or a building</button>
+            <button class="chip" data-to="0" data-what="an invention">An invention</button>
+            <button class="chip" data-to="1" data-what="a creative career">A creative career</button>
+          </div>
+          <div class="answer" aria-live="polite">
+            <p class="answer__lead">Choose one — we'll bring the right counsel to light.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="cta" id="contact">
+        <div class="cta__inner">
+          <p class="eyebrow">Consultation</p>
+          <h2 class="display display--sm">Bring it <em class="lit">to light.</em></h2>
+          <p class="cta__body">Tell us what you're building, signing or defending. We'll respond within one working day.</p>
+          <a class="button" href="mailto:hello@nwokedilegal.com"><span class="seal-dot"></span>Request a consultation</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <img src="/brand/emblem.svg" alt="" width="34" height="44" />
+      <p>© 2026 Nwokedi Legal. Barristers &amp; Solicitors of the Supreme Court of Nigeria.</p>
+      <p class="foot__muted">This website is for information only and does not constitute legal advice.</p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

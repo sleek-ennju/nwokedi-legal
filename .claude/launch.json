@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "web", "run", "dev", "--", "--port", "3000"], "port": 3000 },
+    { "name": "web-prod", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "web", "run", "start", "--", "--port", "3100"], "port": 3100 },
+    { "name": "nwokedi", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "site", "run", "dev", "--", "--port", "5178", "--strictPort"], "port": 5178 }
+  ]
+}
