@@ -4,7 +4,8 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
-  images: { formats: ["image/avif", "image/webp"] },
+  // pre-generated variants (scripts/build-images.mjs) — no hosted optimiser, no quota to run out
+  images: { loader: "custom", loaderFile: "./src/lib/image-loader.ts" },
   // dev only: let a phone on the same private network open the dev server (review sessions)
   allowedDevOrigins: ["10.*.*.*", "192.168.*.*", "172.*.*.*"],
   // review deployments: a belt-and-braces noindex header on every response
