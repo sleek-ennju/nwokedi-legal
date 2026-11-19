@@ -96,3 +96,27 @@ The thank-you page runs the same fulfilment as a fallback, so a slow webhook nev
 ### Dev helpers (404 in production)
 - `GET /api/health/db`: checks the database connection
 - `GET /api/dev/email-preview`: shows the delivery email
+
+# 3 — Admin dashboard (built)
+
+The dashboard lives at **/admin**. It isn't linked from the site and is never indexed.
+
+### Give her an account (run once, from the `web` folder)
+
+```bash
+node scripts/admin-user.mjs add her-email@example.com
+```
+
+It asks for a password (hidden, at least 12 characters), creates the account and makes it an admin.
+On her first sign-in she scans a QR code with an authenticator app (Google Authenticator, Microsoft
+Authenticator or 1Password). From then on every sign-in needs her password **and** the 6-digit code.
+
+| Situation | Command |
+|---|---|
+| Lost phone / new authenticator | `node scripts/admin-user.mjs reset-2fa her-email@example.com` |
+| Forgotten password | `node scripts/admin-user.mjs add her-email@example.com` (sets a new one) |
+| Remove someone | `node scripts/admin-user.mjs remove their-email@example.com` |
+
+Sessions last 12 hours. Removing someone from `admins` locks them out on their next click. The
+session is signed with a key derived from the service-role key, so rotating that key signs everyone
+out. No new environment variables are needed.

@@ -59,27 +59,35 @@ export async function fulfilOrder(reference: string, opts: { origin?: string; mo
   if (!(await claimDelivery(paidOrder.id))) return { state: "already-delivered", order: paidOrder };
 
   try {
-    const book = await getBook(paidOrder.book_slug);
-    const token = newToken();
-    const expires = new Date(Date.now() + LINK_HOURS * 3600_000);
-    if (!(await saveTokenHash(paidOrder.id, sha256(token), expires, LINK_USES))) throw new Error("token not saved");
-
-    const origin = publicOrigin(opts.origin);
-    const mail = bookDeliveryEmail({
-      name: paidOrder.name,
-      title: book?.title ?? "your book",
-      url: `${origin}/download/${token}`,
-      reference: paidOrder.reference,
-      expiresHours: LINK_HOURS,
-      maxUses: LINK_USES,
-      logoUrl: `${origin}/brand/email-logo.png`,
-    });
-    const sent = await sendMail({ to: paidOrder.email, ...mail, replyTo: process.env.CONSULT_INBOX || undefined });
-    if (!sent) throw new Error("email not sent");
+    if (!(await sendDownloadLink(paidOrder, opts.origin))) throw new Error("link not sent");
     return { state: "delivered", order: paidOrder };
   } catch (e) {
     console.error("[fulfil] delivery failed, releasing claim for retry", reference, e);
     await releaseDelivery(paidOrder.id);
     return { state: "error", reason: "delivery failed" };
   }
+}
+
+/**
+ * Issue a fresh download link (new token with the full time and use allowance) and email it.
+ * Used for first delivery and by the admin "resend" action. Older links keep working until they expire.
+ */
+export async function sendDownloadLink(order: Order, origin?: string): Promise<boolean> {
+  if (order.status !== "paid") return false;
+  const book = await getBook(order.book_slug);
+  const token = newToken();
+  const expires = new Date(Date.now() + LINK_HOURS * 3600_000);
+  if (!(await saveTokenHash(order.id, sha256(token), expires, LINK_USES))) return false;
+
+  const base = publicOrigin(origin);
+  const mail = bookDeliveryEmail({
+    name: order.name,
+    title: book?.title ?? "your book",
+    url: `${base}/download/${token}`,
+    reference: order.reference,
+    expiresHours: LINK_HOURS,
+    maxUses: LINK_USES,
+    logoUrl: `${base}/brand/email-logo.png`,
+  });
+  return sendMail({ to: order.email, ...mail, replyTo: process.env.CONSULT_INBOX || undefined });
 }
