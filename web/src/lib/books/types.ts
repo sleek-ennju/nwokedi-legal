@@ -44,7 +44,8 @@ export type Book = {
   /** small notice shown as a badge, e.g. "Preview edition — price to be confirmed" */
   notice?: string;
   sample: SamplePage[];
-  status: "published" | "coming-soon";
+  /** draft = hidden from the site (admin only) */
+  status: "published" | "coming-soon" | "draft";
   /** TRUE until the client supplies the real book — shows a "Sample listing" badge */
   placeholder?: boolean;
 };

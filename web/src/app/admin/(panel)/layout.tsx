@@ -66,3 +66,6 @@ async function NewEnquiries() {
   const { count } = (await db()?.from("enquiries").select("id", { count: "exact", head: true }).eq("status", "new")) ?? {};
   return count ? <span className="a-nav__badge">{count}</span> : null;
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;

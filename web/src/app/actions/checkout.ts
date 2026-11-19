@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { getBook, toMinor } from "@/lib/books/catalog";
+import { getSettings } from "@/lib/settings";
 import { initialize, paystackConfigured } from "@/lib/payments/paystack";
 import { createPendingOrder } from "@/lib/db/store";
 import { dbConfigured } from "@/lib/db/supabase";
@@ -50,6 +51,8 @@ export async function startCheckout(_prev: CheckoutState, form: FormData): Promi
   const { slug, name, email, currency } = parsed.data;
   const book = await getBook(slug);
   if (!book || book.status !== "published") return { status: "error", message: "This book isn't available yet.", values };
+  const { store } = await getSettings();
+  if (!store.open) return { status: "error", message: store.closedMessage || "The bookstore is paused for a moment. Please check back soon.", values };
   const amount = book.price[currency];
   if (!amount) return { status: "error", message: `This book isn't sold in ${currency}.`, values };
 

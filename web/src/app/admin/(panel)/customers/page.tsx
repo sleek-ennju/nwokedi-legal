@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { listCustomers } from "@/lib/admin/data";
 import { day, moneyPair } from "@/lib/admin/format";
-import { getBooks } from "@/lib/books/catalog";
+import { getAllBooks } from "@/lib/books/catalog";
 
 export const metadata: Metadata = { title: "Customers" };
 
 export default async function CustomersPage() {
-  const [customers, books] = await Promise.all([listCustomers(), getBooks()]);
+  const [customers, books] = await Promise.all([listCustomers(), getAllBooks()]);
   const title = (slug: string) => books.find((b) => b.slug === slug)?.title ?? slug;
 
   return (
@@ -59,3 +59,6 @@ export default async function CustomersPage() {
     </>
   );
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;

@@ -1,4 +1,4 @@
-import { getBook } from "@/lib/books/catalog";
+import { getAnyBook as getBook } from "@/lib/books/catalog";
 import { sha256 } from "@/lib/crypto/tokens";
 import { consumeDownload, signedBookUrl } from "@/lib/db/orders";
 

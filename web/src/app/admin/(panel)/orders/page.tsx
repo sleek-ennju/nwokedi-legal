@@ -3,7 +3,7 @@ import Link from "next/link";
 import OrderActions from "@/components/admin/OrderActions";
 import { ORDER_STATUSES, listOrders } from "@/lib/admin/data";
 import { money, when } from "@/lib/admin/format";
-import { getBooks } from "@/lib/books/catalog";
+import { getAllBooks } from "@/lib/books/catalog";
 
 export const metadata: Metadata = { title: "Orders" };
 
@@ -14,7 +14,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
   const q = one(sp.q);
   const status = one(sp.status);
   const page = Number(one(sp.page)) || 1;
-  const [{ orders, total, pages }, books] = await Promise.all([listOrders({ q, status, page }), getBooks()]);
+  const [{ orders, total, pages }, books] = await Promise.all([listOrders({ q, status, page }), getAllBooks()]);
   const title = (slug: string) => books.find((b) => b.slug === slug)?.title ?? slug;
   const href = (o: Record<string, string | number>) => {
     const p = new URLSearchParams({ ...(q && { q }), ...(status && { status }), ...Object.fromEntries(Object.entries(o).map(([k, v]) => [k, String(v)])) });
@@ -131,3 +131,6 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
     </>
   );
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;

@@ -1,11 +1,11 @@
 import { listCustomers } from "@/lib/admin/data";
 import { getAdmin } from "@/lib/admin/session";
-import { getBooks } from "@/lib/books/catalog";
+import { getAllBooks } from "@/lib/books/catalog";
 
 /** CSV of paying customers. Admin-only; never cached. */
 export async function GET() {
   if (!(await getAdmin())) return new Response("Not found", { status: 404 });
-  const [customers, books] = await Promise.all([listCustomers(), getBooks()]);
+  const [customers, books] = await Promise.all([listCustomers(), getAllBooks()]);
   const title = (slug: string) => books.find((b) => b.slug === slug)?.title ?? slug;
 
   // quote every cell, and defuse spreadsheet formulas (=, +, -, @) in user-entered text

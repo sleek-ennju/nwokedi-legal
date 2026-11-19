@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getOverview } from "@/lib/admin/data";
 import { money, moneyPair, when } from "@/lib/admin/format";
-import { getBooks } from "@/lib/books/catalog";
+import { getAllBooks } from "@/lib/books/catalog";
 
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function Overview() {
-  const [o, books] = await Promise.all([getOverview(), getBooks()]);
+  const [o, books] = await Promise.all([getOverview(), getAllBooks()]);
   const title = (slug: string) => books.find((b) => b.slug === slug)?.title ?? slug;
 
   return (
@@ -122,3 +122,6 @@ function Stat({ label, value, note, href }: { label: string; value: string; note
     <div className="a-card">{body}</div>
   );
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;

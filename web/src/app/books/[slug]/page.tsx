@@ -8,6 +8,7 @@ import Book3D from "@/components/books/Book3D";
 import BookTurn from "@/components/books/BookTurn";
 import BuyPanel from "@/components/books/BuyPanel";
 import { getBook, getBooks } from "@/lib/books/catalog";
+import { getSettings } from "@/lib/settings";
 import { serializeJsonLd } from "@/lib/jsonld";
 import { site } from "@/lib/site";
 import "../../books.css";
@@ -44,9 +45,10 @@ export default function BookPage({ params }: PageProps<"/books/[slug]">) {
 
 async function BookContent({ params }: { params: PageProps<"/books/[slug]">["params"] }) {
   const { slug } = await params;
-  const book = await getBook(slug);
+  const [book, { store }] = await Promise.all([getBook(slug), getSettings()]);
   if (!book) notFound();
-  const available = book.status === "published";
+  const available = book.status === "published" && store.open;
+  const paused = book.status === "published" && !store.open;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -103,7 +105,7 @@ async function BookContent({ params }: { params: PageProps<"/books/[slug]">["par
 
           <div className="title-page__info">
             <div className="shelf__badges">
-              {!available && <span className="badge">Coming soon</span>}
+              {!available && <span className="badge">{paused ? store.closedMessage || "Sales paused" : "Coming soon"}</span>}
               {book.notice && <span className="badge badge--muted">{book.notice}</span>}
             </div>
             <p className="eyebrow eyebrow--ink">

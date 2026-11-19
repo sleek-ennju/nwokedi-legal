@@ -1,12 +1,14 @@
 import "server-only";
-import { getBook } from "@/lib/books/catalog";
+import { getAnyBook as getBook } from "@/lib/books/catalog";
 import { newToken, sha256 } from "@/lib/crypto/tokens";
 import { claimDelivery, getOrder, markPaid, markStatus, releaseDelivery, saveTokenHash, type Order } from "@/lib/db/orders";
 import { sendMail } from "@/lib/email/send";
 import { bookDeliveryEmail } from "@/lib/email/templates";
 import { paystackConfigured, verify } from "@/lib/payments/paystack";
 import { site } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
 
+/** defaults for previews; live values come from the dashboard settings */
 export const LINK_HOURS = 72;
 export const LINK_USES = 5;
 
@@ -74,10 +76,10 @@ export async function fulfilOrder(reference: string, opts: { origin?: string; mo
  */
 export async function sendDownloadLink(order: Order, origin?: string): Promise<boolean> {
   if (order.status !== "paid") return false;
-  const book = await getBook(order.book_slug);
+  const [book, { downloads }] = await Promise.all([getBook(order.book_slug), getSettings()]);
   const token = newToken();
-  const expires = new Date(Date.now() + LINK_HOURS * 3600_000);
-  if (!(await saveTokenHash(order.id, sha256(token), expires, LINK_USES))) return false;
+  const expires = new Date(Date.now() + downloads.hours * 3600_000);
+  if (!(await saveTokenHash(order.id, sha256(token), expires, downloads.uses))) return false;
 
   const base = publicOrigin(origin);
   const mail = bookDeliveryEmail({
@@ -85,8 +87,8 @@ export async function sendDownloadLink(order: Order, origin?: string): Promise<b
     title: book?.title ?? "your book",
     url: `${base}/download/${token}`,
     reference: order.reference,
-    expiresHours: LINK_HOURS,
-    maxUses: LINK_USES,
+    expiresHours: downloads.hours,
+    maxUses: downloads.uses,
     logoUrl: `${base}/brand/email-logo.png`,
   });
   return sendMail({ to: order.email, ...mail, replyTo: process.env.CONSULT_INBOX || undefined });

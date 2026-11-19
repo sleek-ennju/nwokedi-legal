@@ -32,3 +32,6 @@ async function AlreadySignedIn() {
   if (await getAdmin()) redirect("/admin");
   return null;
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;

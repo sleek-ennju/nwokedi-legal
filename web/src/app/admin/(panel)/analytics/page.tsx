@@ -3,7 +3,7 @@ import Link from "next/link";
 import { computeAnalytics } from "@/lib/admin/analytics";
 import { getAnalyticsData } from "@/lib/admin/data";
 import { day, moneyPair, pct } from "@/lib/admin/format";
-import { getBooks } from "@/lib/books/catalog";
+import { getAllBooks } from "@/lib/books/catalog";
 
 export const metadata: Metadata = { title: "Store analytics" };
 
@@ -12,7 +12,7 @@ const RANGES = [7, 30, 90] as const;
 export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/analytics">) {
   const raw = (await searchParams).days;
   const days = RANGES.find((r) => String(r) === (Array.isArray(raw) ? raw[0] : raw)) ?? 30;
-  const [{ events, orders }, books] = await Promise.all([getAnalyticsData(days), getBooks()]);
+  const [{ events, orders }, books] = await Promise.all([getAnalyticsData(days), getAllBooks()]);
   const a = computeAnalytics(events, orders as Parameters<typeof computeAnalytics>[1], days);
   const title = (slug: string) => books.find((b) => b.slug === slug)?.title ?? slug;
   const top = a.funnel[0].count || 1;
@@ -213,3 +213,6 @@ function fmtMinutes(m: number) {
   if (m < 48 * 60) return `about ${Math.round(m / 60)} hours`;
   return `about ${Math.round(m / 1440)} days`;
 }
+
+/** Admin screens read the session and live data on every request, so they block rather than prerender. */
+export const instant = false;
