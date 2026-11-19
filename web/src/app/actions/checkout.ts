@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { getBook, toMinor } from "@/lib/books/catalog";
 import { initialize, paystackConfigured } from "@/lib/payments/paystack";
+import { createPendingOrder } from "@/lib/db/store";
+import { dbConfigured } from "@/lib/db/supabase";
 
 export type CheckoutState = {
   status: "idle" | "redirect" | "error";
@@ -56,7 +58,24 @@ export async function startCheckout(_prev: CheckoutState, form: FormData): Promi
   const ref = reference();
   const callbackUrl = `${origin}/checkout/success?ref=${encodeURIComponent(ref)}&book=${encodeURIComponent(slug)}`;
 
-  // TODO(phase 2b): create a `pending` order row (ref, slug, name, email, amount, currency) before redirecting.
+  // record the order as "pending" before the buyer leaves for Paystack; the webhook
+  // later marks it paid. In production an order must be recorded to sell at all.
+  const recorded = await createPendingOrder({
+    reference: ref,
+    bookSlug: slug,
+    name,
+    email,
+    amountMinor: toMinor(amount),
+    currency,
+    meta: { title: book.title, mock: !paystackConfigured() },
+  });
+  if (!recorded && process.env.NODE_ENV === "production") {
+    return {
+      status: "error",
+      message: dbConfigured() ? "We couldn't start your order. Please try again." : "The store is being set up. Please check back shortly.",
+      values,
+    };
+  }
 
   if (!paystackConfigured()) {
     if (process.env.NODE_ENV === "production") {

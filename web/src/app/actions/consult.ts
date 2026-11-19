@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { practices } from "@/lib/site";
+import { saveEnquiry } from "@/lib/db/store";
 
 export type ConsultState = {
   status: "idle" | "ok" | "error";
@@ -70,11 +71,15 @@ export async function submitConsultation(_prev: ConsultState, form: FormData): P
 
   const d = parsed.data;
   const area = practices.find((p) => p.id === d.practice)?.name ?? "Not sure yet";
+  // saved first, so an enquiry is never lost even if the email step fails
+  const saved = await saveEnquiry({ name: d.name, email: d.email, phone: d.phone, practice: area, message: d.message });
+
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONSULT_INBOX;
   const from = process.env.CONSULT_FROM; // e.g. "Nwokedi Legal <enquiries@nwokedilegal.com>"
 
   if (!apiKey || !to || !from) {
+    if (saved) return { status: "ok" }; // stored for the admin; email alerts not set up yet
     if (process.env.NODE_ENV !== "production") {
       console.info("[consult] email not configured — enquiry received:", { ...d, area });
       return { status: "ok" };
@@ -99,8 +104,8 @@ export async function submitConsultation(_prev: ConsultState, form: FormData): P
   });
   if (!res.ok) {
     console.error("[consult] resend failed", res.status, await res.text());
+    if (saved) return { status: "ok" }; // the enquiry is safely stored; only the alert failed
     return { status: "error", message: "Something went wrong sending your request. Please try again.", values };
   }
-  // Phase 2: also persist to Supabase `enquiries` so it appears in the admin.
   return { status: "ok" };
 }

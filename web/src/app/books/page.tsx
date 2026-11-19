@@ -60,7 +60,7 @@ export default async function BooksPage() {
                   <div className="shelf__meta">
                     <div className="shelf__badges">
                       {b.status === "coming-soon" && <span className="badge">Coming soon</span>}
-                      {b.placeholder && <span className="badge badge--muted">Sample listing</span>}
+                      {b.notice && <span className="badge badge--muted">{b.notice}</span>}
                     </div>
                     <h2 className="shelf__name">{b.title}</h2>
                     <p className="shelf__hook">{b.hook}</p>
@@ -72,6 +72,17 @@ export default async function BooksPage() {
                 </Link>
               </li>
             ))}
+            <li className="shelf__item shelf__item--soon" aria-label="More titles in preparation">
+              <div className="shelf__stage shelf__stage--soon">
+                <span className="soon__spine" />
+                <span className="soon__spine" />
+                <span className="soon__spine" />
+              </div>
+              <div className="shelf__meta">
+                <h2 className="shelf__name">More in preparation.</h2>
+                <p className="shelf__hook">New guides from the practice are on the way. Follow along — or ask about a topic you&apos;d like covered.</p>
+              </div>
+            </li>
           </ul>
         </section>
 

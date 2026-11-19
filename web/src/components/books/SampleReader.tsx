@@ -96,9 +96,27 @@ export default function SampleReader({ slug, title, pages, buyLabel, onBuy, disa
       );
     const p = pages[idx];
     return (
-      <div className={`leaf leaf--${side}`} key={idx}>
+      <div className={`leaf leaf--${side}${p.kind === "image" && p.teaser ? " leaf--teaser" : ""}`} key={idx}>
         {p.kind === "image" ? (
-          <Image src={p.src} alt={p.alt} fill sizes="(min-width: 900px) 40vw, 90vw" />
+          <>
+            {p.teaser && p.width && p.height ? (
+              <Image
+                className="leaf__teaser-img"
+                src={p.src}
+                alt={p.alt}
+                width={p.width}
+                height={p.height}
+                sizes="(min-width: 900px) 40vw, 90vw"
+              />
+            ) : (
+              <Image src={p.src} alt={p.alt} fill sizes="(min-width: 900px) 40vw, 90vw" style={{ objectFit: "contain" }} />
+            )}
+            {p.teaser && (
+              <span className="leaf__more">
+                <span>Continued in the full book</span>
+              </span>
+            )}
+          </>
         ) : (
           <div className="leaf__text">
             {p.heading && <h3>{p.heading}</h3>}

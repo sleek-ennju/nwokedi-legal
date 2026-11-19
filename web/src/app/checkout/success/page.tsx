@@ -6,7 +6,10 @@ import Footer from "@/components/Footer";
 import Book3D from "@/components/books/Book3D";
 import TrackView from "@/components/books/TrackView";
 import { getBook } from "@/lib/books/catalog";
+import { headers } from "next/headers";
 import { paystackConfigured, verify } from "@/lib/payments/paystack";
+import { fulfilOrder } from "@/lib/fulfil";
+import { dbConfigured } from "@/lib/db/supabase";
 import "../../books.css";
 
 export const metadata: Metadata = {
@@ -29,6 +32,8 @@ export default function SuccessPage({ searchParams }: PageProps<"/checkout/succe
   );
 }
 
+const maskEmail = (e: string) => e.replace(/^(.)(.*)(.@.*)$/, (_, a, m, b) => a + "•".repeat(Math.min(m.length, 6)) + b);
+
 async function Result({ searchParams }: { searchParams: PageProps<"/checkout/success">["searchParams"] }) {
   const sp = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -39,7 +44,16 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
 
   let state: "paid" | "pending" | "failed" = "pending";
   let email = "";
-  if (mock) state = "paid";
+  if (ref && dbConfigured()) {
+    // fallback to the webhook: fulfil here too (idempotent, delivers exactly once)
+    const h = await headers();
+    const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
+    const r = await fulfilOrder(ref, { origin, mock });
+    if (r.state === "delivered" || r.state === "already-delivered") {
+      state = "paid";
+      email = r.order.email;
+    } else if (r.state === "failed") state = "failed";
+  } else if (mock) state = "paid";
   else if (ref && paystackConfigured()) {
     const v = await verify(ref);
     if (v?.status === "success") {
@@ -77,7 +91,7 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
       <h1 className="done__title">{state === "paid" ? "Your book is on its way." : "We're confirming your payment."}</h1>
       <p className="done__body">
         {state === "paid"
-          ? `A secure download link for ${book?.title ?? "your book"} is being sent to ${email || "your email"}. It arrives within a few minutes — check your spam folder if you don't see it.`
+          ? `A secure download link for ${book?.title ?? "your book"} is being sent to ${email ? maskEmail(email) : "your email"}. It arrives within a few minutes — check your spam folder if you don't see it.`
           : "This can take a moment with bank transfers. As soon as it clears, your download link is emailed to you automatically."}
       </p>
       {ref && <p className="done__ref">Reference: {ref}</p>}

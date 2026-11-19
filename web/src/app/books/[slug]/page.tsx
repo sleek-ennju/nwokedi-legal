@@ -104,7 +104,7 @@ async function BookContent({ params }: { params: PageProps<"/books/[slug]">["par
           <div className="title-page__info">
             <div className="shelf__badges">
               {!available && <span className="badge">Coming soon</span>}
-              {book.placeholder && <span className="badge badge--muted">Sample listing — placeholder content</span>}
+              {book.notice && <span className="badge badge--muted">{book.notice}</span>}
             </div>
             <p className="eyebrow eyebrow--ink">
               {book.format} · {book.pages} pages · {book.year}

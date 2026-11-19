@@ -11,7 +11,16 @@ export type CoverTheme = {
 
 export type SamplePage =
   | { kind: "text"; heading?: string; body: string[]; folio?: string }
-  | { kind: "image"; src: string; alt: string };
+  | {
+      kind: "image";
+      src: string;
+      alt: string;
+      /** a cropped page that fades out — the cliffhanger before "Keep reading" */
+      teaser?: boolean;
+      /** intrinsic size, required for teaser (cropped) pages */
+      width?: number;
+      height?: number;
+    };
 
 export type Book = {
   slug: string;
@@ -28,7 +37,12 @@ export type Book = {
   synopsis: string[];
   contents: string[];
   forWhom: string[];
-  cover: { theme: CoverTheme; image?: string };
+  /** theme is optional: without one, a brand cover is generated from the title */
+  cover: { theme?: CoverTheme; image?: string };
+  /** e.g. "Part 1" — shown on the generated cover */
+  series?: string;
+  /** small notice shown as a badge, e.g. "Preview edition — price to be confirmed" */
+  notice?: string;
   sample: SamplePage[];
   status: "published" | "coming-soon";
   /** TRUE until the client supplies the real book — shows a "Sample listing" badge */

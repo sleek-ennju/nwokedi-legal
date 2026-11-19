@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { recordEvent } from "@/lib/db/store";
 
 const Event = z.object({
   e: z.enum([
@@ -34,8 +35,19 @@ export async function POST(req: Request) {
   const parsed = Event.safeParse(data);
   if (!parsed.success) return new Response(null, { status: 400 });
 
-  const row = { ...parsed.data, country: req.headers.get("x-vercel-ip-country") ?? undefined, at: new Date().toISOString() };
-  if (process.env.NODE_ENV !== "production") console.info("[event]", row);
-  // TODO(phase 3): insert `row` into Supabase `events`.
+  const d = parsed.data;
+  const country = req.headers.get("x-vercel-ip-country") ?? undefined;
+  if (process.env.NODE_ENV !== "production") console.info("[event]", d.e, d.slug ?? "", d.n ?? "");
+  await recordEvent({
+    event: d.e,
+    sid: d.sid,
+    slug: d.slug,
+    n: d.n,
+    currency: d.currency,
+    referrer: d.ref,
+    utm: d.utm,
+    device: d.m,
+    country,
+  });
   return new Response(null, { status: 204 });
 }

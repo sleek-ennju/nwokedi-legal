@@ -38,7 +38,10 @@ export const metadata: Metadata = {
     description: site.description,
   },
   twitter: { card: "summary_large_image", title, description: site.description },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
+  robots:
+    process.env.SITE_NOINDEX === "1"
+      ? { index: false, follow: false }
+      : { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
   formatDetection: { telephone: false },
 };
 

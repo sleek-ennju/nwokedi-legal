@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Book } from "@/lib/books/types";
+import { coverTheme, titleScale } from "@/lib/books/cover";
 
 type Props = {
   book: Book;
@@ -16,7 +17,7 @@ type Props = {
  * Rotation is driven by CSS variables (--ry / --rx) so callers can animate it.
  */
 export default function Book3D({ book, width = 240, priority = false, className = "" }: Props) {
-  const t = book.cover.theme;
+  const t = coverTheme(book);
   const depth = Math.round(Math.min(46, Math.max(18, book.pages / 6)) * (width / 240));
   const style = {
     "--bw": `${width}px`,
@@ -25,6 +26,7 @@ export default function Book3D({ book, width = 240, priority = false, className 
     "--c-ink": t.ink,
     "--c-foil": t.foil,
     "--c-spine": t.spine ?? t.bg,
+    "--title-k": titleScale(book.title),
   } as React.CSSProperties;
 
   return (
@@ -34,11 +36,15 @@ export default function Book3D({ book, width = 240, priority = false, className 
           <Image src={book.cover.image} alt="" fill sizes={`${width}px`} priority={priority} />
         ) : (
           <div className="cover">
-            <span className="cover__emblem" />
+            <span className="cover__top">
+              <span className="cover__emblem" />
+              {book.series && <span className="cover__series">{book.series}</span>}
+            </span>
             <span className="cover__rule" />
             <span className="cover__title">{book.title}</span>
             {book.subtitle && <span className="cover__subtitle">{book.subtitle}</span>}
             <span className="cover__author">{book.author}</span>
+            <span className="cover__watermark" />
           </div>
         )}
         <span className="book3d__sheen" />
