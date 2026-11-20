@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AdminIcon from "@/components/admin/AdminIcon";
 import AdminNav from "@/components/admin/AdminNav";
+import NotificationBell from "@/components/admin/NotificationBell";
+import { connection } from "next/server";
 import { signOut } from "../actions/auth";
 import { getAdmin, requireAdmin } from "@/lib/admin/session";
 import { db } from "@/lib/db/supabase";
@@ -44,12 +46,25 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
         </div>
       </aside>
       <main className="a-main">
+        <div className="a-top">
+          <Suspense fallback={<span className="a-top__date" />}>
+            <Today />
+          </Suspense>
+          <NotificationBell />
+        </div>
         <Suspense fallback={<p className="a-mute">Loading…</p>}>
           <Gate>{children}</Gate>
         </Suspense>
       </main>
     </div>
   );
+}
+
+/** Orientation first: today's date in Lagos time. */
+async function Today() {
+  await connection();
+  const d = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Africa/Lagos" }).format(new Date());
+  return <span className="a-top__date">{d}</span>;
 }
 
 async function Gate({ children }: { children: React.ReactNode }) {

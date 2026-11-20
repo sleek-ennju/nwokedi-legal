@@ -44,6 +44,36 @@ export default function SettingsForm({ settings, disabled }: { settings: Setting
         </div>
       </section>
 
+      <section className="a-card a-alerts" id="alerts">
+        <h2>Alerts</h2>
+        <p className="a-card__sub">
+          Everything also appears under the bell in your dashboard. Email alerts start once delivery emails are switched on (see Status below).
+        </p>
+        <div className="a-form">
+          <label className="a-field a-field--wide">
+            <span className="a-field__label">
+              Send alerts to
+              <small>Leave empty to only see them in the dashboard</small>
+            </span>
+            <input className="a-input" name="alertEmail" type="email" placeholder="you@example.com" defaultValue={settings.alerts.email} maxLength={200} />
+          </label>
+        </div>
+        <div className="a-checks-row">
+          <label className="a-check">
+            <input type="checkbox" name="alertEnquiries" defaultChecked={settings.alerts.enquiries} />
+            New enquiries <small>instantly; reply straight from the email</small>
+          </label>
+          <label className="a-check">
+            <input type="checkbox" name="alertOrders" defaultChecked={settings.alerts.orders} />
+            New sales
+          </label>
+          <label className="a-check">
+            <input type="checkbox" name="alertProblems" defaultChecked={settings.alerts.problems} />
+            Problems that need you <small>e.g. a buyer&rsquo;s download email failed</small>
+          </label>
+        </div>
+      </section>
+
       <div className="a-savebar">
         {state && (
           <span className={`a-msg ${state.ok ? "a-msg--ok" : "a-msg--err"}`} role="status">

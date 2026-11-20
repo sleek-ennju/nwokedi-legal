@@ -118,6 +118,34 @@
     linear-gradient(180deg, #16253d 0%, #101c2f 100%);
   box-shadow: inset -1px 0 0 rgba(233, 225, 206, 0.07);
   scrollbar-color: rgba(233, 225, 206, 0.2) transparent;
+  /* never clip: on short or zoomed screens the rail scrolls, so Sign out is always reachable */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* shorter windows (laptops, browser zoom): tighten the rail before it ever needs to scroll */
+@media (min-width: 861px) and (max-height: 860px) {
+  .a-side {
+    gap: 18px;
+    padding: 20px 14px 14px;
+  }
+  .a-brand {
+    gap: 6px;
+  }
+  .a-brand__lockup {
+    width: 150px;
+  }
+  .a-nav a {
+    min-height: 36px;
+  }
+  .a-side__foot {
+    padding-top: 10px;
+  }
+  .a-side__who {
+    padding-bottom: 4px;
+  }
+  .a-side__link {
+    min-height: 32px;
+  }
 }
 .a-side ::selection {
   background: #e9e1ce;

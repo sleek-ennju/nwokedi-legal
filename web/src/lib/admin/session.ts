@@ -61,10 +61,10 @@ export const cookieOptions = (maxAgeSeconds: number) => ({
   maxAge: maxAgeSeconds,
 });
 
-export async function startSession(userId: string, email: string) {
+export async function startSession(userId: string, email: string, name?: string) {
   const exp = Date.now() + SESSION_HOURS * 3600_000;
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, sign({ uid: userId, email, exp }), cookieOptions(SESSION_HOURS * 3600));
+  jar.set(SESSION_COOKIE, sign({ uid: userId, email, name: name || undefined, exp }), cookieOptions(SESSION_HOURS * 3600));
   jar.delete({ name: PENDING_COOKIE, path: "/admin" });
 }
 
@@ -88,15 +88,15 @@ export async function isAdminUser(userId: string): Promise<boolean> {
   return Boolean(data);
 }
 
-export type Admin = { id: string; email: string };
+export type Admin = { id: string; email: string; name?: string };
 
 /** The signed-in admin for this request, or null. Deduplicated per request. */
 export const getAdmin = cache(async (): Promise<Admin | null> => {
   await connection(); // the expiry check reads the clock: always at request time
-  const s = unsign<{ uid: string; email: string }>((await cookies()).get(SESSION_COOKIE)?.value);
+  const s = unsign<{ uid: string; email: string; name?: string }>((await cookies()).get(SESSION_COOKIE)?.value);
   if (!s) return null;
   if (!(await isAdminUser(s.uid))) return null;
-  return { id: s.uid, email: s.email };
+  return { id: s.uid, email: s.email, name: s.name };
 });
 
 /** Use at the top of every admin page, action and route handler. */

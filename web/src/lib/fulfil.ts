@@ -7,6 +7,8 @@ import { bookDeliveryEmail } from "@/lib/email/templates";
 import { paystackConfigured, verify } from "@/lib/payments/paystack";
 import { site } from "@/lib/site";
 import { getSettings } from "@/lib/settings";
+import { notify } from "@/lib/notify";
+import { money } from "@/lib/admin/format";
 
 /** defaults for previews; live values come from the dashboard settings */
 export const LINK_HOURS = 72;
@@ -60,12 +62,38 @@ export async function fulfilOrder(reference: string, opts: { origin?: string; mo
   // exactly-once delivery
   if (!(await claimDelivery(paidOrder.id))) return { state: "already-delivered", order: paidOrder };
 
+  // tell her about the sale once (dedupe makes webhook retries harmless), before delivery,
+  // so a sale is never invisible just because an email step failed
+  const amount = money(paidOrder.amount_minor / 100, paidOrder.currency);
+  const bookTitle = String(paidOrder.meta?.title ?? paidOrder.book_slug);
+  const where = `/admin/orders?q=${encodeURIComponent(paidOrder.reference)}`;
+  await notify({
+    kind: "order_paid",
+    dedupe: `order_paid:${paidOrder.reference}`,
+    title: `New sale · ${amount}`,
+    body: `${paidOrder.name} bought ${bookTitle}.`,
+    href: where,
+    detail: [
+      ["Buyer", `${paidOrder.name} (${paidOrder.email})`],
+      ["Book", bookTitle],
+      ["Amount", amount],
+      ["Reference", paidOrder.reference],
+    ],
+  });
+
   try {
     if (!(await sendDownloadLink(paidOrder, opts.origin))) throw new Error("link not sent");
     return { state: "delivered", order: paidOrder };
   } catch (e) {
     console.error("[fulfil] delivery failed, releasing claim for retry", reference, e);
     await releaseDelivery(paidOrder.id);
+    await notify({
+      kind: "delivery_failed",
+      dedupe: `delivery_failed:${paidOrder.reference}`,
+      title: "A buyer's download email didn't send",
+      body: `${paidOrder.name} paid ${amount} for ${bookTitle}, but the email with their link failed. Open the order and press Resend link.`,
+      href: where,
+    });
     return { state: "error", reason: "delivery failed" };
   }
 }

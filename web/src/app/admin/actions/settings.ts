@@ -13,6 +13,10 @@ const schema = z.object({
   uses: z.coerce.number().int().min(1, "At least 1 download").max(50, "At most 50 downloads"),
   open: z.boolean(),
   closedMessage: z.string().trim().max(140),
+  alertEmail: z.union([z.literal(""), z.string().trim().toLowerCase().email("Enter a valid email for alerts").max(200)]),
+  orders: z.boolean(),
+  enquiries: z.boolean(),
+  problems: z.boolean(),
 });
 
 export async function saveSettings(_prev: SettingsResult | null, form: FormData): Promise<SettingsResult> {
@@ -22,14 +26,19 @@ export async function saveSettings(_prev: SettingsResult | null, form: FormData)
     uses: form.get("uses"),
     open: form.get("open") === "on",
     closedMessage: form.get("closedMessage") ?? "",
+    alertEmail: String(form.get("alertEmail") ?? "").trim(),
+    orders: form.get("alertOrders") === "on",
+    enquiries: form.get("alertEnquiries") === "on",
+    problems: form.get("alertProblems") === "on",
   });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   const c = db();
   if (!c) return { ok: false, message: "The database isn't connected." };
-  const { hours, uses, open, closedMessage } = parsed.data;
+  const { hours, uses, open, closedMessage, alertEmail, orders, enquiries, problems } = parsed.data;
   const { error } = await c.from("settings").upsert([
     { key: "downloads", value: { hours, uses } },
     { key: "store", value: { open, closedMessage } },
+    { key: "alerts", value: { email: alertEmail, orders, enquiries, problems } },
   ]);
   if (error) {
     console.error("[admin] saveSettings", error.message);

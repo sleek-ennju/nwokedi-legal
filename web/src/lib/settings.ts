@@ -12,11 +12,14 @@ export const SETTINGS_TAG = "settings";
 export type Settings = {
   downloads: { hours: number; uses: number };
   store: { open: boolean; closedMessage: string };
+  /** where and when to email her (the bell always shows everything) */
+  alerts: { email: string; orders: boolean; enquiries: boolean; problems: boolean };
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   downloads: { hours: 72, uses: 5 },
   store: { open: true, closedMessage: "" },
+  alerts: { email: "", orders: true, enquiries: true, problems: true },
 };
 
 export async function loadSettings(): Promise<{ settings: Settings; tableReady: boolean }> {
@@ -30,6 +33,7 @@ export async function loadSettings(): Promise<{ settings: Settings; tableReady: 
     settings: {
       downloads: { ...DEFAULT_SETTINGS.downloads, ...map.downloads },
       store: { ...DEFAULT_SETTINGS.store, ...map.store },
+      alerts: { ...DEFAULT_SETTINGS.alerts, ...map.alerts },
     },
   };
 }

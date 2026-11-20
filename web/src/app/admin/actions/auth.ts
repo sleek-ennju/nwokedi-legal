@@ -24,7 +24,7 @@ export type AuthState = {
   secret?: string;
 };
 
-type Pending = { at: string; rt: string; uid: string; email: string; exp: number };
+type Pending = { at: string; rt: string; uid: string; email: string; name?: string; exp: number };
 
 const NO_MATCH = "That email and password don't match an admin account.";
 const slow = () => new Promise((r) => setTimeout(r, 400 + Math.random() * 400));
@@ -57,6 +57,7 @@ async function password(form: FormData): Promise<AuthState> {
     rt: data.session.refresh_token,
     uid: data.user.id,
     email: data.user.email ?? parsed.data.email,
+    name: typeof data.user.user_metadata?.name === "string" ? data.user.user_metadata.name.slice(0, 60) : undefined,
     exp: Date.now() + PENDING_MINUTES * 60_000,
   };
   (await cookies()).set(PENDING_COOKIE, sign(pending), cookieOptions(PENDING_MINUTES * 60));
@@ -108,7 +109,7 @@ async function code(prev: AuthState, form: FormData): Promise<AuthState> {
 
   // our own signed session takes over; the Supabase session isn't needed any more
   await c.auth.signOut({ scope: "local" });
-  await startSession(pending.uid, pending.email);
+  await startSession(pending.uid, pending.email, pending.name);
   redirect("/admin");
 }
 

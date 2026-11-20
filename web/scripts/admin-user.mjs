@@ -5,6 +5,8 @@
 //   node scripts/admin-user.mjs remove her@example.com   → revokes admin and deletes the account
 //   node scripts/admin-user.mjs reset-2fa her@example.com → removes the authenticator, so the next
 //                                                         sign-in sets it up again (lost phone)
+//   node scripts/admin-user.mjs name her@example.com Miriam → the name the dashboard greets them by
+//                                                         (takes effect at their next sign-in)
 //
 // Reads SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env.local. The password can also come from
 // the ADMIN_PASSWORD environment variable (for scripted test setups). It is never printed.
@@ -18,10 +20,10 @@ const env = Object.fromEntries(
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1).trim()])
 );
-const [cmd, rawEmail] = process.argv.slice(2);
+const [cmd, rawEmail, ...rest] = process.argv.slice(2);
 const email = rawEmail?.trim().toLowerCase();
-if (!["add", "remove", "reset-2fa"].includes(cmd) || !email?.includes("@")) {
-  console.log("usage: node scripts/admin-user.mjs add|remove|reset-2fa <email>");
+if (!["add", "remove", "reset-2fa", "name"].includes(cmd) || !email?.includes("@")) {
+  console.log("usage: node scripts/admin-user.mjs add|remove|reset-2fa <email>\n       node scripts/admin-user.mjs name <email> <display name>");
   process.exit(1);
 }
 const sb = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -79,4 +81,14 @@ if (cmd === "reset-2fa") {
   if (error) throw error;
   for (const f of data.factors) await sb.auth.admin.mfa.deleteFactor({ userId: user.id, id: f.id });
   console.log(`Removed ${data.factors.length} authenticator(s). Next sign-in will set one up again.`);
+}
+
+if (cmd === "name") {
+  const name = rest.join(" ").trim().slice(0, 60);
+  if (!name) (console.log("Give a display name, e.g. Miriam"), process.exit(1));
+  const user = await findUser(email);
+  if (!user) (console.log("No such account."), process.exit(0));
+  const { error } = await sb.auth.admin.updateUserById(user.id, { user_metadata: { ...user.user_metadata, name } });
+  if (error) throw error;
+  console.log(`The dashboard will greet ${email} as "${name}" from their next sign-in.`);
 }

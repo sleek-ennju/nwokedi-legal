@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { practices } from "@/lib/site";
 import { saveEnquiry } from "@/lib/db/store";
+import { notify } from "@/lib/notify";
 
 export type ConsultState = {
   status: "idle" | "ok" | "error";
@@ -27,9 +28,6 @@ const schema = z.object({
   }),
   message: z.string().trim().min(10, "A sentence or two helps us prepare.").max(3000),
 });
-
-const esc = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 async function verifyTurnstile(token: string | null) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -74,38 +72,27 @@ export async function submitConsultation(_prev: ConsultState, form: FormData): P
   // saved first, so an enquiry is never lost even if the email step fails
   const saved = await saveEnquiry({ name: d.name, email: d.email, phone: d.phone, practice: area, message: d.message });
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.CONSULT_INBOX;
-  const from = process.env.CONSULT_FROM; // e.g. "Nwokedi Legal <enquiries@nwokedilegal.com>"
-
-  if (!apiKey || !to || !from) {
-    if (saved) return { status: "ok" }; // stored for the admin; email alerts not set up yet
-    if (process.env.NODE_ENV !== "production") {
-      console.info("[consult] email not configured — enquiry received:", { ...d, area });
-      return { status: "ok" };
-    }
-    return {
-      status: "error",
-      message: "Our enquiry form is briefly unavailable. Please email us directly.",
-      values,
-    };
-  }
-
-  const html = `
-    <h2 style="font-family:Georgia,serif">New consultation request</h2>
-    <p><b>Name:</b> ${esc(d.name)}<br/><b>Email:</b> ${esc(d.email)}<br/>
-    <b>Phone:</b> ${esc(d.phone || "—")}<br/><b>Area:</b> ${esc(area)}</p>
-    <p style="white-space:pre-wrap">${esc(d.message)}</p>`;
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to, reply_to: d.email, subject: `Consultation — ${area} — ${d.name}`, html }),
+  // her dashboard bell (always) + an email alert (when set up); replying answers the enquirer
+  const { emailed } = await notify({
+    kind: "enquiry_new",
+    title: `New enquiry · ${area}`,
+    body: `${d.name} would like to talk about ${area === "Not sure yet" ? "a legal matter" : area.toLowerCase()}.`,
+    href: "/admin/enquiries",
+    replyTo: d.email,
+    detail: [
+      ["Name", d.name],
+      ["Email", d.email],
+      ["Phone", d.phone || "—"],
+      ["Area", area],
+    ],
+    message: d.message,
   });
-  if (!res.ok) {
-    console.error("[consult] resend failed", res.status, await res.text());
-    if (saved) return { status: "ok" }; // the enquiry is safely stored; only the alert failed
-    return { status: "error", message: "Something went wrong sending your request. Please try again.", values };
+
+  // the enquiry reached her if it was stored, or (database down) at least emailed
+  if (saved || emailed) return { status: "ok" };
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[consult] not stored or emailed (dev) — enquiry received:", { ...d, area });
+    return { status: "ok" };
   }
-  return { status: "ok" };
+  return { status: "error", message: "Our enquiry form is briefly unavailable. Please email us directly.", values };
 }
