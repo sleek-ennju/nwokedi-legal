@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import AdminIcon from "@/components/admin/AdminIcon";
 import AdminNav from "@/components/admin/AdminNav";
 import { signOut } from "../actions/auth";
 import { getAdmin, requireAdmin } from "@/lib/admin/session";
@@ -10,14 +11,12 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="a-shell">
       <aside className="a-side">
-        <Link href="/admin" className="a-brand">
-          <span className="a-brand__mark" aria-hidden="true">
-            N
-          </span>
-          <span className="a-brand__name">
-            Nwokedi Legal
-            <small>Admin</small>
-          </span>
+        <Link href="/admin" className="a-brand" aria-label="Nwokedi Legal admin — overview">
+          {/* eslint-disable-next-line @next/next/no-img-element -- vector brand mark */}
+          <img className="a-brand__lockup" src="/brand/lockup.svg" alt="" width={176} height={31} />
+          {/* eslint-disable-next-line @next/next/no-img-element -- vector brand mark */}
+          <img className="a-brand__emblem" src="/brand/emblem.svg" alt="" width={26} height={34} />
+          <span className="a-brand__tag">Admin</span>
         </Link>
         <AdminNav
           badges={{
@@ -32,12 +31,14 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
           <Suspense>
             <Who />
           </Suspense>
-          <a href="/" target="_blank" rel="noreferrer">
-            View the site ↗
+          <a className="a-side__link" href="/" target="_blank" rel="noreferrer">
+            <AdminIcon name="external" size={16} />
+            <span>View the site</span>
           </a>
           <form action={signOut}>
-            <button className="a-linkbtn" type="submit">
-              Sign out
+            <button className="a-side__link" type="submit">
+              <AdminIcon name="signout" size={16} />
+              <span>Sign out</span>
             </button>
           </form>
         </div>
@@ -58,7 +59,7 @@ async function Gate({ children }: { children: React.ReactNode }) {
 
 async function Who() {
   const admin = await getAdmin();
-  return admin ? <span>{admin.email}</span> : null;
+  return admin ? <span className="a-side__who">{admin.email}</span> : null;
 }
 
 async function NewEnquiries() {

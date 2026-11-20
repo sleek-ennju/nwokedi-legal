@@ -9,17 +9,15 @@ export const metadata: Metadata = { title: "Sign in" };
 export default function LoginPage() {
   return (
     <main className="a-login">
-      <div className="a-login__card">
-        <div className="a-brand">
-          <span className="a-brand__mark" aria-hidden="true">
-            N
-          </span>
-          <span className="a-brand__name">
-            Nwokedi Legal
-            <small>Admin</small>
-          </span>
+      <div className="a-login__stack">
+        <div className="a-login__mark">
+          {/* eslint-disable-next-line @next/next/no-img-element -- vector brand mark */}
+          <img src="/brand/lockup.svg" alt="Nwokedi Legal" width={248} height={43} />
         </div>
-        <LoginForm />
+        <div className="a-login__card">
+          <LoginForm />
+        </div>
+        <p className="a-login__foot">Private dashboard · authorised staff only</p>
       </div>
       <Suspense>
         <AlreadySignedIn />
