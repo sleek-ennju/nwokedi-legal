@@ -14,3 +14,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# client materials and internal notes: kept locally, never published
+/NWOKEDI LEGAL/
+/REVIEW_GUIDE.md
