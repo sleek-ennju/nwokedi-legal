@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./admin.css";
 import "./admin-books.css";
 import "./admin-workspace.css";
+import "./admin-articles.css";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s · Admin · Nwokedi Legal" },

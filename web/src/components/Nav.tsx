@@ -7,7 +7,7 @@ import NavGlass from "./NavGlass";
 type Props = {
   /** "light" = navy ink on a cream page (store pages); "dark" = cream on the dark stage */
   theme?: "dark" | "light";
-  current?: "books";
+  current?: "books" | "articles";
 };
 
 /** Primary navigation, shared by every page. Links are absolute ("/#…") so they work from anywhere. */
@@ -26,6 +26,9 @@ export default function Nav({ theme = "dark", current }: Props) {
         <a href="/#principal">The Principal</a>
         <a href="/books" aria-current={current === "books" ? "page" : undefined}>
           Books
+        </a>
+        <a href="/articles" aria-current={current === "articles" ? "page" : undefined}>
+          Articles
         </a>
         <a href="/#consult" className="nav__cta">
           <span className="seal-dot" />

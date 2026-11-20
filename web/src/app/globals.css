@@ -285,7 +285,7 @@ a {
   box-shadow: 0 0 0 4px rgba(198, 28, 35, 0.18);
 }
 @media (max-width: 760px) {
-  .nav__links a:not(.nav__cta):not([href="/books"]) {
+  .nav__links a:not(.nav__cta):not([href="/books"]):not([href="/articles"]) {
     display: none;
   }
   .nav__links {
@@ -298,6 +298,13 @@ a {
   .nav__cta {
     padding: 9px 13px;
     gap: 8px;
+  }
+}
+/* small phones: room for one section link — the one you're in, else Books */
+@media (max-width: 460px) {
+  .nav__links:has(a[aria-current="page"]) a:not(.nav__cta):not([aria-current="page"]),
+  .nav__links:not(:has(a[aria-current="page"])) a[href="/articles"] {
+    display: none;
   }
 }
 

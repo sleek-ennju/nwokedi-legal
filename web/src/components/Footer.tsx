@@ -97,6 +97,9 @@ export default function Footer() {
             <li>
               <a href="/books">Books</a>
             </li>
+            <li>
+              <a href="/articles">Articles</a>
+            </li>
           </ul>
         </nav>
 

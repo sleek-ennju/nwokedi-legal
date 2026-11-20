@@ -9,6 +9,7 @@ const LINKS: [string, string, IconName][] = [
   ["/admin", "Overview", "overview"],
   ["/admin/orders", "Orders", "orders"],
   ["/admin/books", "Books", "books"],
+  ["/admin/articles", "Articles", "articles"],
   ["/admin/analytics", "Store analytics", "analytics"],
   ["/admin/customers", "Customers", "customers"],
   ["/admin/enquiries", "Enquiries", "enquiries"],
