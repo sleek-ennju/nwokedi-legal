@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "@/lib/toast";
 
 export default function CopyField({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -13,6 +14,7 @@ export default function CopyField({ value }: { value: string }) {
         onClick={async () => {
           await navigator.clipboard.writeText(value);
           setCopied(true);
+          toast.success("Copied to your clipboard");
           setTimeout(() => setCopied(false), 1600);
         }}
       >

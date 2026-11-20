@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "@/lib/toast";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Book3D from "@/components/books/Book3D";
@@ -84,6 +85,13 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
     setDirty(true);
   };
   const err = (k: string) => result?.errors?.[k];
+
+  // every save/delete/upload answers with a toast; field errors stay inline
+  useEffect(() => {
+    if (!result) return;
+    if (result.ok) toast.success(result.message);
+    else toast.error(result.message);
+  }, [result]);
 
   // leaving with unsaved edits asks first
   useEffect(() => {
@@ -436,8 +444,8 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
 
         <div className="be__save">
           {busy && <p className="a-msg a-mute" role="status">{busy}</p>}
-          {result && (
-            <p className={`a-msg ${result.ok ? "a-msg--ok" : "a-msg--err"}`} role="status">
+          {result && !result.ok && (
+            <p className="a-msg a-msg--err" role="status">
               {result.message}
             </p>
           )}

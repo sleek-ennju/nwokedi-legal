@@ -5,6 +5,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Book3D from "@/components/books/Book3D";
 import TrackView from "@/components/books/TrackView";
+import ToastOnMount from "@/components/ToastOnMount";
 import { getBook } from "@/lib/books/catalog";
 import { headers } from "next/headers";
 import { paystackConfigured, verify } from "@/lib/payments/paystack";
@@ -65,6 +66,7 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
   if (state === "failed") {
     return (
       <div className="done__card">
+        <ToastOnMount kind="error" title="Payment not completed" description="Nothing was charged. You can try again whenever you're ready." />
         <p className="eyebrow eyebrow--ink">Payment not completed</p>
         <h1 className="done__title">Nothing was charged.</h1>
         <p className="done__body">The payment didn&apos;t go through. You can try again whenever you&apos;re ready.</p>
@@ -81,6 +83,7 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
   return (
     <div className="done__card">
       {state === "paid" && <TrackView event="payment_success" slug={slug} />}
+      {state === "paid" && <ToastOnMount kind="success" title="Payment confirmed" description="Your download link is on its way to your inbox." />}
       {book && (
         <div className="done__book">
           <Book3D book={book} width={150} />

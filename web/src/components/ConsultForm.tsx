@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { submitConsultation, type ConsultState } from "@/app/actions/consult";
+import { toast } from "@/lib/toast";
 import { practices } from "@/lib/site";
 import Select from "./Select";
 
@@ -11,6 +12,17 @@ export default function ConsultForm() {
   const [state, action, pending] = useActionState<ConsultState, FormData>(submitConsultation, { status: "idle" });
   const startedAt = useRef<HTMLInputElement>(null);
   const turnstileLoaded = useRef(false);
+
+  // feedback the moment the server answers
+  useEffect(() => {
+    if (state.status === "ok") {
+      toast.success("Your request has been sent", { description: "Thank you. We'll reply to the email you gave us." });
+    } else if (state.status === "error" && state.message) {
+      toast.error(state.fieldErrors ? "A few details need attention" : "We couldn't send your request", {
+        description: state.fieldErrors ? "Check the highlighted fields and try again." : state.message,
+      });
+    }
+  }, [state]);
 
   // first focus: stamp the start time (bot check) and load Turnstile — kept off the critical path
   const onFirstFocus = () => {

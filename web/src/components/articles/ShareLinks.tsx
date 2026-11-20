@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "@/lib/toast";
 
 /** Share where her readers are: LinkedIn, WhatsApp, X, or copy the link. */
 export default function ShareLinks({ url, title }: { url: string; title: string }) {
@@ -26,9 +27,10 @@ export default function ShareLinks({ url, title }: { url: string; title: string 
           try {
             await navigator.clipboard.writeText(url);
             setCopied(true);
+            toast.success("Link copied", { description: "Paste it anywhere to share this article." });
             setTimeout(() => setCopied(false), 1800);
           } catch {
-            /* clipboard blocked: the address bar still has it */
+            toast.error("Couldn't copy the link", { description: "Copy it from the address bar instead." });
           }
         }}
       >

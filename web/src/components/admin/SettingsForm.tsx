@@ -1,12 +1,19 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { toast } from "@/lib/toast";
+import { useActionState, useEffect, useState } from "react";
 import { saveSettings } from "@/app/admin/actions/settings";
 import type { Settings } from "@/lib/settings";
 
 export default function SettingsForm({ settings, disabled }: { settings: Settings; disabled: boolean }) {
   const [state, action, pending] = useActionState(saveSettings, null);
   const [open, setOpen] = useState(settings.store.open);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.ok) toast.success("Settings saved", { description: state.message === "Saved." ? undefined : state.message });
+    else toast.error("Couldn't save settings", { description: state.message });
+  }, [state]);
 
   return (
     <form action={action} className="a-grid a-grid--2">

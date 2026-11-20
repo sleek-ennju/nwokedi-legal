@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { updateEnquiry } from "../../actions/manage";
+import EnquiryActions from "@/components/admin/EnquiryActions";
 import { ENQUIRY_STATUSES, listEnquiries, type EnquiryStatus } from "@/lib/admin/data";
 import { when } from "@/lib/admin/format";
 
@@ -50,23 +50,7 @@ export default async function EnquiriesPage({ searchParams }: PageProps<"/admin/
                     {e.practice} · {when(e.created_at)}
                   </span>
                 </div>
-                <form action={updateEnquiry} className="a-actions">
-                  <input type="hidden" name="id" value={e.id} />
-                  {e.status !== "replied" && (
-                    <button className="a-btn a-btn--ghost a-btn--sm" name="status" value="replied">
-                      Mark replied
-                    </button>
-                  )}
-                  {e.status !== "archived" ? (
-                    <button className="a-btn a-btn--ghost a-btn--sm" name="status" value="archived">
-                      Archive
-                    </button>
-                  ) : (
-                    <button className="a-btn a-btn--ghost a-btn--sm" name="status" value="new">
-                      Reopen
-                    </button>
-                  )}
-                </form>
+                <EnquiryActions id={e.id} status={e.status} name={e.name} />
                 <p className="a-enq__msg">{e.message}</p>
                 <div className="a-enq__contact">
                   <a className="a-btn a-btn--sm" href={`mailto:${e.email}?subject=${subject}`}>

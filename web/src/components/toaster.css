@@ -1,0 +1,305 @@
+/* ═════════ Toasts — Sonner-style stack in the Chambers palette ═════════
+   Motion tokens from transitions.dev (toast + banner stacking):
+   open 350ms / close 250ms, rise 16px, blur 2px, scale .97, smooth-out ease. */
+
+.toaster {
+  --t-open: 350ms;
+  --t-close: 250ms;
+  --t-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-rise: 18px;
+  position: fixed;
+  z-index: 1000;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: min(380px, calc(100vw - 32px));
+  height: var(--stack-h, 0px);
+  transition: height var(--t-open) var(--t-ease);
+  pointer-events: none;
+}
+.toaster ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toast {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 20px;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 14px 14px 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: pan-y;
+  color: #e9e1ce;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(237, 175, 36, 0.09), transparent 60%),
+    linear-gradient(160deg, #1b2c48, #111d31);
+  box-shadow:
+    0 0 0 1px rgba(233, 225, 206, 0.1) inset,
+    0 18px 40px -18px rgba(5, 10, 20, 0.6),
+    0 4px 12px -4px rgba(5, 10, 20, 0.35);
+  transform-origin: 50% 100%;
+  transform: translate3d(var(--swipe, 0px), var(--y, 0px), 0) scale(var(--s, 1));
+  opacity: 1;
+  filter: blur(0);
+  will-change: transform, opacity, filter;
+  transition:
+    transform var(--t-open) var(--t-ease),
+    opacity var(--t-open) var(--t-ease),
+    filter var(--t-open) var(--t-ease);
+}
+/* arriving: from below, small, soft — released in the same task by JS */
+.toast.is-enter {
+  transition: none;
+  opacity: 0;
+  filter: blur(2px);
+  transform: translate3d(0, var(--t-rise), 0) scale(0.97);
+}
+/* older toasts step back: smaller (via --s), higher (via --y), dimmer, softer */
+.toast.is-behind {
+  opacity: 0.62;
+  filter: blur(0.6px);
+}
+.toast.is-behind .toast__body,
+.toast.is-behind .toast__icon {
+  opacity: 0.55;
+}
+.toast.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+/* leaving is quicker than arriving */
+.toast.is-leaving {
+  opacity: 0;
+  filter: blur(2px);
+  transform: translate3d(0, 12px, 0) scale(0.96);
+  transition:
+    transform var(--t-close) var(--t-ease),
+    opacity var(--t-close) var(--t-ease),
+    filter var(--t-close) var(--t-ease);
+  pointer-events: none;
+}
+.toast.is-swiped-right {
+  transform: translate3d(110%, var(--y, 0px), 0);
+}
+.toast.is-swiped-left {
+  transform: translate3d(-110%, var(--y, 0px), 0);
+}
+.toast.is-dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+/* signature: one sweep of torchlight crosses the toast as it lands */
+.toast::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(237, 175, 36, 0.2) 48%, rgba(255, 236, 190, 0.18) 52%, transparent 70%);
+  transform: translateX(-120%);
+  animation: toast-sweep 1100ms cubic-bezier(0.65, 0, 0.35, 1) 140ms 1 both;
+}
+@keyframes toast-sweep {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* icons */
+.toast__icon {
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  transition: opacity 200ms ease;
+}
+.toast__icon svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+.toast__ring {
+  stroke: rgba(237, 175, 36, 0.35);
+  stroke-width: 1.5;
+}
+.toast__tick,
+.toast__mark {
+  stroke: #edaf24;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* the success tick draws itself (transitions.dev "success check") */
+.toast--success .toast__icon {
+  animation: toast-check-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both, toast-check-bob 500ms cubic-bezier(0.34, 1.35, 0.64, 1) both;
+}
+.toast__tick {
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  animation: toast-draw 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
+  filter: drop-shadow(0 0 4px rgba(237, 175, 36, 0.55));
+}
+@keyframes toast-check-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    rotate: 70deg;
+  }
+}
+@keyframes toast-check-bob {
+  from {
+    translate: 0 10px;
+  }
+}
+@keyframes toast-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.toast--error .toast__ring {
+  stroke: rgba(240, 120, 110, 0.55);
+}
+.toast--error .toast__mark {
+  stroke: #f4aaa4;
+}
+.toast--error {
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(198, 28, 35, 0.16), transparent 60%),
+    linear-gradient(160deg, #1b2c48, #111d31);
+}
+.toast--error::after {
+  display: none;
+}
+.toast--info .toast__ring {
+  stroke: rgba(233, 225, 206, 0.3);
+}
+.toast--info .toast__mark {
+  stroke: #e9e1ce;
+}
+.toast--alert .toast__icon {
+  animation: toast-ring 900ms cubic-bezier(0.36, 0, 0.2, 1) 200ms 1 both;
+  transform-origin: 50% 10%;
+}
+@keyframes toast-ring {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  20% {
+    rotate: 14deg;
+  }
+  40% {
+    rotate: -10deg;
+  }
+  60% {
+    rotate: 6deg;
+  }
+  80% {
+    rotate: -3deg;
+  }
+}
+
+/* text */
+.toast__body {
+  min-width: 0;
+  transition: opacity 200ms ease;
+}
+.toast__title {
+  margin: 1px 0 0;
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #fff8e8;
+}
+.toast__desc {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(233, 225, 206, 0.72);
+}
+.toast__action {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 0;
+  background: #e9e1ce;
+  color: #16253d;
+  font: 500 12.5px/1 var(--font-sans), system-ui, sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+.toast__action:hover {
+  background: #fff8e8;
+}
+.toast__action:active {
+  transform: scale(0.97);
+}
+.toast__close {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(233, 225, 206, 0.55);
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.toast__close svg path {
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.toast__close:hover {
+  color: #fff8e8;
+  background: rgba(233, 225, 206, 0.1);
+}
+.toast :focus-visible {
+  outline: 2px solid #b08a64;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .toaster {
+    right: 16px;
+    left: 16px;
+    width: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toaster,
+  .toast {
+    transition: opacity 150ms linear !important;
+  }
+  .toast.is-enter,
+  .toast.is-leaving {
+    transform: translate3d(0, var(--y, 0px), 0) !important;
+    filter: none !important;
+  }
+  .toast::after,
+  .toast--success .toast__icon,
+  .toast--alert .toast__icon {
+    animation: none !important;
+  }
+  .toast__tick {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+}

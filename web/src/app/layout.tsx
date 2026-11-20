@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Toaster from "@/components/Toaster";
 import { site } from "@/lib/site";
 import { serializeJsonLd, siteGraph } from "@/lib/jsonld";
 import "./globals.css";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.remove('no-js')" }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteGraph()) }} />
         {children}
+        <Toaster />
         {/* the analytics script is served by Vercel's edge; elsewhere it would 404 */}
         {process.env.VERCEL && <Analytics />}
       </body>

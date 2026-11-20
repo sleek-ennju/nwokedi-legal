@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "@/lib/toast";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Markdown } from "@/lib/articles/markdown";
@@ -57,6 +58,13 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
   };
   const err = (k: string) => result?.errors?.[k];
   const words = a.body.split(/\s+/).filter(Boolean).length;
+
+  // every save/delete/upload answers with a toast; field errors stay inline
+  useEffect(() => {
+    if (!result) return;
+    if (result.ok) toast.success(result.message);
+    else toast.error(result.message);
+  }, [result]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -329,8 +337,8 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
               {busy}
             </p>
           )}
-          {result && (
-            <p className={`a-msg ${result.ok ? "a-msg--ok" : "a-msg--err"}`} role="status">
+          {result && !result.ok && (
+            <p className="a-msg a-msg--err" role="status">
               {result.message}
             </p>
           )}

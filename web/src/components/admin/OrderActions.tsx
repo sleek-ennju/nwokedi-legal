@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { toast } from "@/lib/toast";
+import { useActionState, useEffect, useState } from "react";
 import { markRefunded, resendLink } from "@/app/admin/actions/manage";
 
 /** Resend a download link; record a refund (two clicks, because it switches the links off). */
@@ -9,6 +10,17 @@ export default function OrderActions({ id, canAct }: { id: string; canAct: boole
   const [refund, doRefund, refunding] = useActionState(markRefunded, null);
   const [confirming, setConfirming] = useState(false);
   const result = refund ?? sent;
+
+  useEffect(() => {
+    if (!sent) return;
+    if (sent.ok) toast.success("Download link sent", { description: sent.message });
+    else toast.error("Link not sent", { description: sent.message });
+  }, [sent]);
+  useEffect(() => {
+    if (!refund) return;
+    if (refund.ok) toast.success("Refund recorded", { description: refund.message });
+    else toast.error("Couldn't record the refund", { description: refund.message });
+  }, [refund]);
 
   const message = result && (
     <p className={`a-msg ${result.ok ? "a-msg--ok" : "a-msg--err"}`} role="status">

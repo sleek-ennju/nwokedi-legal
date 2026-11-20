@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "@/lib/toast";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { importStarterBooks, type BookResult } from "@/app/admin/actions/books";
@@ -17,6 +18,8 @@ export default function ImportStarter() {
           start(async () => {
             const res = await importStarterBooks();
             setR(res);
+            if (res.ok) toast.success(res.message);
+            else toast.error(res.message);
             if (res.ok) router.refresh();
           })
         }

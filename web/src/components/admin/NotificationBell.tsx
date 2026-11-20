@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { readNotifications } from "@/app/admin/actions/notifications";
+import { toast } from "@/lib/toast";
 import type { NotificationRow } from "@/lib/admin/notifications";
 
 type Feed = { items: NotificationRow[]; unread: number; ready: boolean };
@@ -51,10 +52,15 @@ export default function NotificationBell() {
       const f = (await r.json()) as Feed;
       // anything not seen before (after the first load) is "fresh" — highlighted once
       if (seen.current) {
-        const added = f.items.filter((i) => !seen.current!.has(i.id)).map((i) => i.id);
+        const arrivals = f.items.filter((i) => !seen.current!.has(i.id));
+        const added = arrivals.map((i) => i.id);
         if (added.length) {
           setFresh((s) => new Set([...s, ...added]));
           router.refresh(); // the page behind updates too (new order, new enquiry)
+          // and a quiet toast so she sees it without opening the bell
+          const n = arrivals[0];
+          if (arrivals.length === 1) toast.alert(n.title, { description: n.body ?? undefined, action: n.href ? { label: "Open", href: n.href } : undefined });
+          else toast.alert(`${arrivals.length} new notifications`, { description: arrivals.map((a) => a.title).slice(0, 3).join(" · "), action: { label: "View", onClick: () => setOpen(true) } });
         }
       }
       seen.current = new Set(f.items.map((i) => i.id));

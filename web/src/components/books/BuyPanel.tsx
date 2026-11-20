@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "@/lib/toast";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { startCheckout, type CheckoutState } from "@/app/actions/checkout";
 import { track } from "@/lib/analytics";
@@ -31,7 +32,12 @@ export default function BuyPanel({ slug, title, prices, available, sample }: Pro
 
   useEffect(() => track("book_view", { slug }), [slug]);
   useEffect(() => {
-    if (state.status === "redirect" && state.url) window.location.assign(state.url);
+    if (state.status === "redirect" && state.url) {
+      // the sheet is a top-layer dialog; close it so the toast can be seen while Paystack loads
+      sheet.current?.close();
+      toast.info("Opening secure checkout…", { description: "You'll pay on Paystack's secure page, then come straight back." });
+      window.location.assign(state.url);
+    }
   }, [state]);
 
   const openSheet = () => {
