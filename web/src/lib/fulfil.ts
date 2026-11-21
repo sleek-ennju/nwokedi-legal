@@ -104,10 +104,9 @@ export async function fulfilOrder(reference: string, opts: { origin?: string; mo
  */
 export async function sendDownloadLink(order: Order, origin?: string): Promise<boolean> {
   if (order.status !== "paid") return false;
-  const [book, { downloads }] = await Promise.all([getBook(order.book_slug), getSettings()]);
-  const token = newToken();
-  const expires = new Date(Date.now() + downloads.hours * 3600_000);
-  if (!(await saveTokenHash(order.id, sha256(token), expires, downloads.uses))) return false;
+  const [book, issued] = await Promise.all([getBook(order.book_slug), issueDownloadToken(order)]);
+  if (!issued) return false;
+  const { token, downloads } = issued;
 
   const base = publicOrigin(origin);
   const mail = bookDeliveryEmail({
@@ -120,4 +119,18 @@ export async function sendDownloadLink(order: Order, origin?: string): Promise<b
     logoUrl: `${base}/brand/email-logo.png`,
   });
   return sendMail({ to: order.email, ...mail, replyTo: process.env.CONSULT_INBOX || undefined });
+}
+
+/**
+ * A fresh download token for a paid order (hashed in the database, raw token
+ * returned once). Shared by the email link and the thank-you page's instant
+ * download, so both obey the same time and use limits from Settings.
+ */
+export async function issueDownloadToken(order: Order) {
+  if (order.status !== "paid") return null;
+  const { downloads } = await getSettings();
+  const token = newToken();
+  const expires = new Date(Date.now() + downloads.hours * 3600_000);
+  if (!(await saveTokenHash(order.id, sha256(token), expires, downloads.uses))) return null;
+  return { token, downloads };
 }

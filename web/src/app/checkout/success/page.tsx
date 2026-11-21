@@ -11,6 +11,11 @@ import { headers } from "next/headers";
 import { paystackConfigured, verify } from "@/lib/payments/paystack";
 import { fulfilOrder } from "@/lib/fulfil";
 import { dbConfigured } from "@/lib/db/supabase";
+import { getOrder } from "@/lib/db/orders";
+import { hasBuyerPass } from "@/lib/buyer-pass";
+import { emailConfigured } from "@/lib/email/send";
+import { getSettings } from "@/lib/settings";
+import PendingRefresh from "@/components/books/PendingRefresh";
 import "../../books.css";
 
 export const metadata: Metadata = {
@@ -43,17 +48,22 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
   const mock = one(sp.mock) === "1" && process.env.NODE_ENV !== "production";
   const book = slug ? await getBook(slug) : undefined;
 
+  // "paid" comes from the order itself, never from whether the email went out
   let state: "paid" | "pending" | "failed" = "pending";
   let email = "";
+  let emailed = false;
   if (ref && dbConfigured()) {
     // fallback to the webhook: fulfil here too (idempotent, delivers exactly once)
     const h = await headers();
     const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
     const r = await fulfilOrder(ref, { origin, mock });
-    if (r.state === "delivered" || r.state === "already-delivered") {
+    const order = ("order" in r ? r.order : null) ?? (await getOrder(ref));
+    if (r.state === "failed") state = "failed";
+    else if (order?.status === "paid") {
       state = "paid";
-      email = r.order.email;
-    } else if (r.state === "failed") state = "failed";
+      email = order.email;
+      emailed = r.state === "delivered" || r.state === "already-delivered";
+    }
   } else if (mock) state = "paid";
   else if (ref && paystackConfigured()) {
     const v = await verify(ref);
@@ -67,7 +77,6 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
     return (
       <div className="done__card">
         <ToastOnMount kind="error" title="Payment not completed" description="Nothing was charged. You can try again whenever you're ready." />
-        <p className="eyebrow eyebrow--ink">Payment not completed</p>
         <h1 className="done__title">Nothing was charged.</h1>
         <p className="done__body">The payment didn&apos;t go through. You can try again whenever you&apos;re ready.</p>
         {book && (
@@ -80,23 +89,62 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
     );
   }
 
+  if (state === "pending") {
+    return (
+      <div className="done__card">
+        {book && (
+          <div className="done__book">
+            <Book3D book={book} width={150} />
+          </div>
+        )}
+        <h1 className="done__title">Waiting for your bank to confirm.</h1>
+        <p className="done__body">
+          This usually takes a few seconds, a little longer for bank transfers. This page checks again on its own, so you can stay
+          right here.
+        </p>
+        <PendingRefresh reference={ref} />
+      </div>
+    );
+  }
+
+  // paid: hand over the book right here (only in the browser that bought it)
+  const canDownload = Boolean(ref && !mock && (await hasBuyerPass(ref)));
+  const { downloads } = await getSettings();
+  const to = email ? maskEmail(email) : "your email";
+  const emailLine = emailed
+    ? `We've also emailed a download link to ${to}. Keep it for later.`
+    : emailConfigured()
+      ? `A download link is also on its way to ${to}.`
+      : null;
+
   return (
     <div className="done__card">
-      {state === "paid" && <TrackView event="payment_success" slug={slug} />}
-      {state === "paid" && <ToastOnMount kind="success" title="Payment confirmed" description="Your download link is on its way to your inbox." />}
+      <TrackView event="payment_success" slug={slug} />
+      <ToastOnMount kind="success" title="Payment confirmed" description={canDownload ? "Your book is ready to download." : `Your download link is on its way to ${to}.`} />
       {book && (
         <div className="done__book">
           <Book3D book={book} width={150} />
         </div>
       )}
       {mock && <span className="badge badge--muted">Test mode — no real payment was taken</span>}
-      <p className="eyebrow eyebrow--ink">{state === "paid" ? "Payment confirmed" : "Almost there"}</p>
-      <h1 className="done__title">{state === "paid" ? "Your book is on its way." : "We're confirming your payment."}</h1>
+      <h1 className="done__title">Payment confirmed.</h1>
       <p className="done__body">
-        {state === "paid"
-          ? `A secure download link for ${book?.title ?? "your book"} is being sent to ${email ? maskEmail(email) : "your email"}. It arrives within a few minutes — check your spam folder if you don't see it.`
-          : "This can take a moment with bank transfers. As soon as it clears, your download link is emailed to you automatically."}
+        {canDownload ? `Thank you. Your copy of ${book?.title ?? "the book"} is ready.` : `Thank you. Your download link for ${book?.title ?? "the book"} is on its way to ${to}.`}
+        {canDownload && emailLine ? ` ${emailLine}` : ""}
       </p>
+      {canDownload && (
+        <>
+          <a className="button button--ink done__download" href={`/checkout/download/${encodeURIComponent(ref)}`}>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 2.5v8M4.5 7.5 8 11l3.5-3.5M3 13.5h10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Download your book
+          </a>
+          <p className="done__fine">
+            {book?.format ?? "PDF"} · works for {downloads.hours} hours, up to {downloads.uses} downloads. Save the file somewhere safe.
+          </p>
+        </>
+      )}
       {ref && <p className="done__ref">Reference: {ref}</p>}
       <Link className="button button--ghost" href="/books">
         Back to the books

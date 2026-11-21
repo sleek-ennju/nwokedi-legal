@@ -867,6 +867,37 @@
   color: rgba(22, 37, 61, 0.66);
   font-variant-numeric: tabular-nums;
 }
+.done__download {
+  margin-top: 4px;
+  gap: 10px;
+}
+.done__fine {
+  margin: 12px 0 20px;
+  font-size: 13px;
+  color: rgba(22, 37, 61, 0.66);
+}
+.done__pending {
+  display: grid;
+  justify-items: center;
+}
+.done__checking {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.done__spin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(22, 37, 61, 0.15);
+  border-top-color: var(--bronze);
+  animation: done-spin 800ms linear infinite;
+}
+@keyframes done-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .book-open,

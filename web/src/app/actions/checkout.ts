@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { initialize, paystackConfigured } from "@/lib/payments/paystack";
 import { createPendingOrder } from "@/lib/db/store";
 import { dbConfigured } from "@/lib/db/supabase";
+import { grantBuyerPass } from "@/lib/buyer-pass";
 
 export type CheckoutState = {
   status: "idle" | "redirect" | "error";
@@ -72,6 +73,8 @@ export async function startCheckout(_prev: CheckoutState, form: FormData): Promi
     currency,
     meta: { title: book.title, mock: !paystackConfigured() },
   });
+  // remember that this browser started this purchase (instant download on the thank-you page)
+  if (recorded) await grantBuyerPass(ref);
   if (!recorded && process.env.NODE_ENV === "production") {
     return {
       status: "error",
