@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Toaster from "@/components/Toaster";
+import SmoothScroll from "@/components/SmoothScroll";
+import { Suspense } from "react";
 import { site } from "@/lib/site";
 import { serializeJsonLd, siteGraph } from "@/lib/jsonld";
 import "./globals.css";
@@ -62,6 +64,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteGraph()) }} />
         {children}
         <Toaster />
+        <Suspense>
+          <SmoothScroll />
+        </Suspense>
         {/* the analytics script is served by Vercel's edge; elsewhere it would 404 */}
         {process.env.VERCEL && <Analytics />}
       </body>

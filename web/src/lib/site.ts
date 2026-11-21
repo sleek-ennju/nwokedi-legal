@@ -35,6 +35,12 @@ export const site = {
   get sameAs(): string[] {
     return Object.values(this.social).filter(Boolean);
   },
+  /** the small "Built by" credit in the footer */
+  credit: {
+    name: "CodeWithSleek",
+    // TODO(Emmanuel): the studio website. Until it's set the credit shows without a link.
+    url: process.env.NEXT_PUBLIC_CREDIT_URL ?? "",
+  },
   principal: {
     name: process.env.NEXT_PUBLIC_PRINCIPAL_NAME ?? "",
     jobTitle: "Principal",

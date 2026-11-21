@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages --
    Deliberate full-document links: the home page boots a WebGL worker and a scroll
    timeline once per document, so entering/leaving it must be a real page load. */
+import BuiltBy from "./BuiltBy";
 import { practices, site } from "@/lib/site";
 
 type Social = { key: keyof typeof site.social; label: string; path: React.ReactNode };
@@ -153,6 +154,7 @@ export default function Footer() {
           © {site.name}. {site.tagline} of the Supreme Court of Nigeria.
         </p>
         <p className="foot__muted">This website is for general information only and is not legal advice.</p>
+        <BuiltBy />
       </div>
 
       <div className="foot__mark" aria-hidden />

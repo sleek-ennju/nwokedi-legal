@@ -1,6 +1,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { NAV_OFFSET, SMOOTH_SCROLL } from "@/lib/smooth-scroll";
 import { K, L, P, S, vis } from "./state";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -27,7 +28,8 @@ export function initScroll() {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (!reduced) {
-    lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
+    // shared feel (lib/smooth-scroll.ts); GSAP's ticker drives the single animation loop
+    lenis = new Lenis({ ...SMOOTH_SCROLL, autoRaf: false });
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((t) => lenis!.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
@@ -40,7 +42,7 @@ export function initScroll() {
       const el = id.length > 1 ? document.querySelector<HTMLElement>(id) : null;
       if (!el) return;
       e.preventDefault();
-      if (lenis) lenis.scrollTo(el, { duration: 1.6 });
+      if (lenis) lenis.scrollTo(el, { duration: 1.6, offset: el.id === "consult" ? -NAV_OFFSET : 0 });
       else el.scrollIntoView();
     })
   );

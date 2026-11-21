@@ -8,7 +8,7 @@ import Nav from "@/components/Nav";
 import Principal from "@/components/Principal";
 import TheCall from "@/components/TheCall";
 import Image from "next/image";
-import portrait from "@/assets/photos/gaze-portrait.jpg";
+import consultPortrait from "@/assets/photos/consult-portrait.jpg";
 import { practices, site } from "@/lib/site";
 
 export default function Home() {
@@ -105,9 +105,17 @@ export default function Home() {
         <section className="consult" id="consult" data-theme="light" data-cover aria-labelledby="consult-title">
           <div className="consult__inner">
             <div className="consult__intro">
-              <div className="consult__portrait">
-                <Image src={portrait} alt="" placeholder="blur" fill sizes="200px" />
-              </div>
+              <figure className="consult__portrait">
+                <div className="consult__frame">
+                  <Image
+                    src={consultPortrait}
+                    alt={`${site.principal.name || "The principal"}, seated in a cream blazer, ready to hear about your matter`}
+                    placeholder="blur"
+                    fill
+                    sizes="(min-width: 1024px) 320px, (min-width: 640px) 260px, 220px"
+                  />
+                </div>
+              </figure>
               <p className="eyebrow eyebrow--ink">Request a consultation</p>
               <h2 className="consult__title" id="consult-title">
                 Tell us <em>what you need.</em>

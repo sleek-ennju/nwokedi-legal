@@ -85,7 +85,7 @@ export default function BuyPanel({ slug, title, prices, available, sample }: Pro
         Instant delivery: a secure download link is emailed to you as soon as payment is confirmed.
       </p>
 
-      <dialog className="sheet" ref={sheet} aria-labelledby="sheet-title">
+      <dialog className="sheet" ref={sheet} data-lenis-prevent aria-labelledby="sheet-title">
         <form method="dialog" className="sheet__close-form">
           <button className="sheet__close" aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden>

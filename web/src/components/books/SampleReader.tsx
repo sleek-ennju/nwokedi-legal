@@ -145,7 +145,7 @@ export default function SampleReader({ slug, title, pages, buyLabel, onBuy, disa
         </svg>
       </button>
 
-      <dialog className="reader" ref={dialog} aria-label={`Sample of ${title}`}>
+      <dialog className="reader" ref={dialog} data-lenis-prevent aria-label={`Sample of ${title}`}>
         <div className="reader__bar">
           <p>
             <span className="reader__title">{title}</span> <span className="reader__tag">Sample</span>
