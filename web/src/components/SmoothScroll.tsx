@@ -20,9 +20,12 @@ export default function SmoothScroll() {
     if (!enabled) return;
     const l = new Lenis({ ...SMOOTH_SCROLL, autoRaf: true });
     lenis.current = l;
+    // sheets and readers pause the page behind them
+    (window as unknown as { __lenis?: Lenis }).__lenis = l;
     return () => {
       l.destroy();
       lenis.current = null;
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
     };
   }, [enabled]);
 

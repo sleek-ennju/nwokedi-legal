@@ -45,7 +45,7 @@ export default function BookPage({ params }: PageProps<"/books/[slug]">) {
 
 async function BookContent({ params }: { params: PageProps<"/books/[slug]">["params"] }) {
   const { slug } = await params;
-  const [book, { store }] = await Promise.all([getBook(slug), getSettings()]);
+  const [book, { store, downloads }] = await Promise.all([getBook(slug), getSettings()]);
   if (!book) notFound();
   const available = book.status === "published" && store.open;
   const paused = book.status === "published" && !store.open;
@@ -115,7 +115,7 @@ async function BookContent({ params }: { params: PageProps<"/books/[slug]">["par
             {book.subtitle && <p className="title-page__subtitle">{book.subtitle}</p>}
             <p className="title-page__author">by {book.author}</p>
 
-            <BuyPanel slug={book.slug} title={book.title} prices={book.price} available={available} sample={book.sample} />
+            <BuyPanel book={book} available={available} downloads={downloads} />
 
             <div className="title-page__body">
               {book.synopsis.map((p, i) => (

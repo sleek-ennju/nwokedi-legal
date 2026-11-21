@@ -39,6 +39,7 @@ export function initScroll() {
   if (!reduced) {
     // shared feel (lib/smooth-scroll.ts); GSAP's ticker drives the single animation loop
     lenis = new Lenis({ ...SMOOTH_SCROLL, autoRaf: false });
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((t) => lenis!.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);

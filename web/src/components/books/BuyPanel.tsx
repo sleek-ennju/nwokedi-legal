@@ -1,53 +1,116 @@
 "use client";
 
 import { toast } from "@/lib/toast";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import { startCheckout, type CheckoutState } from "@/app/actions/checkout";
 import { track } from "@/lib/analytics";
-import type { Currency } from "@/lib/books/types";
+import type { Book, Currency } from "@/lib/books/types";
+import Book3D from "./Book3D";
 import SampleReader from "./SampleReader";
-import type { SamplePage } from "@/lib/books/types";
+import "./checkout.css";
 
 type Props = {
-  slug: string;
-  title: string;
-  prices: { NGN: number; USD?: number };
+  book: Book;
   available: boolean;
-  sample: SamplePage[];
+  /** the live download-link policy from Settings, shown as a promise in checkout */
+  downloads: { hours: number; uses: number };
 };
 
 const fmt = (n: number, c: Currency) =>
   new Intl.NumberFormat(c === "NGN" ? "en-NG" : "en-US", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CLOSE_MS = 280;
+
+type Lenisish = { stop?: () => void; start?: () => void };
+const lenis = () => (window as unknown as { __lenis?: Lenisish }).__lenis;
 
 /**
- * Price, currency choice, the purchase sheet and the sample reader for one book.
- * Checkout is a short sheet: name + email (where the book is delivered), then Paystack.
+ * Price, currency choice, the checkout sheet and the sample reader for one book.
+ * Checkout: what you're buying (order card), what happens next (3 steps), two
+ * fields, one button to Paystack. Side sheet on desktop; a bottom sheet with a
+ * drag handle and a pinned pay bar on phones.
  */
-export default function BuyPanel({ slug, title, prices, available, sample }: Props) {
+export default function BuyPanel({ book, available, downloads }: Props) {
+  const { slug, title, price: prices } = book;
   const [currency, setCurrency] = useState<Currency>("NGN");
   const [state, action, pending] = useActionState<CheckoutState, FormData>(startCheckout, { status: "idle" });
   const sheet = useRef<HTMLDialogElement>(null);
+  const [closing, setClosing] = useState(false);
+  const [drag, setDrag] = useState(0);
+  const dragStart = useRef<number | null>(null);
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
   const price = prices[currency] ?? prices.NGN;
   const label = available ? `Buy · ${fmt(price, currency)}` : "Coming soon";
 
   useEffect(() => track("book_view", { slug }), [slug]);
+
+  const close = useCallback(() => {
+    const d = sheet.current;
+    if (!d?.open) return;
+    setClosing(true);
+    setTimeout(() => {
+      d.close();
+      setClosing(false);
+      setDrag(0);
+      lenis()?.start?.();
+    }, CLOSE_MS);
+  }, []);
+
   useEffect(() => {
     if (state.status === "redirect" && state.url) {
       // the sheet is a top-layer dialog; close it so the toast can be seen while Paystack loads
       sheet.current?.close();
+      lenis()?.start?.();
       toast.info("Opening secure checkout…", { description: "You'll pay on Paystack's secure page, then come straight back." });
       window.location.assign(state.url);
     }
   }, [state]);
 
+  // Esc animates out instead of vanishing
+  useEffect(() => {
+    const d = sheet.current;
+    if (!d) return;
+    const onCancel = (e: Event) => {
+      e.preventDefault();
+      close();
+    };
+    d.addEventListener("cancel", onCancel);
+    return () => d.removeEventListener("cancel", onCancel);
+  }, [close]);
+
   const openSheet = () => {
     if (!available) return;
-    sheet.current?.showModal();
+    const d = sheet.current;
+    d?.showModal();
+    // desktop: ready to type; phones: no keyboard over the order card
+    if (matchMedia("(min-width: 641px)").matches) d?.querySelector<HTMLInputElement>("#b-name")?.focus();
+    else d?.focus();
+    lenis()?.stop?.();
     track("checkout_start", { slug, currency });
   };
 
   const err = state.fieldErrors ?? {};
   const v = state.values ?? { name: "", email: "" };
+  const emailOk = EMAIL.test(email.trim());
+  const emailErr = err.email ?? (emailTouched && email && !emailOk ? "That email doesn't look complete yet." : undefined);
+
+  // drag the phone sheet down to dismiss (only from the handle/header)
+  const onDragStart = (e: React.PointerEvent) => {
+    if (!matchMedia("(max-width: 640px)").matches) return;
+    dragStart.current = e.clientY;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onDragMove = (e: React.PointerEvent) => {
+    if (dragStart.current === null) return;
+    setDrag(Math.max(0, e.clientY - dragStart.current));
+  };
+  const onDragEnd = () => {
+    if (dragStart.current === null) return;
+    dragStart.current = null;
+    if (drag > 110) close();
+    else setDrag(0);
+  };
 
   return (
     <div className="buy">
@@ -79,82 +142,178 @@ export default function BuyPanel({ slug, title, prices, available, sample }: Pro
           <span className="seal-dot" />
           {label}
         </button>
-        <SampleReader slug={slug} title={title} pages={sample} buyLabel={label} onBuy={openSheet} disabled={!available} />
+        <SampleReader slug={slug} title={title} pages={book.sample} buyLabel={label} onBuy={openSheet} disabled={!available} />
       </div>
-      <p className="buy__note">
-        Instant delivery: a secure download link is emailed to you as soon as payment is confirmed.
-      </p>
+      <p className="buy__note">Instant delivery: a secure download link is emailed to you as soon as payment is confirmed.</p>
 
-      <dialog className="sheet" ref={sheet} data-lenis-prevent aria-labelledby="sheet-title">
-        <form method="dialog" className="sheet__close-form">
-          <button className="sheet__close" aria-label="Close">
-            <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden>
-              <path d="M4 4l10 10M14 4 4 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-          </button>
-        </form>
-        <p className="eyebrow eyebrow--ink">Checkout</p>
-        <h2 className="sheet__title" id="sheet-title">
-          {title}
-        </h2>
-        <p className="sheet__total">
-          {fmt(price, currency)} <span>· digital edition</span>
-        </p>
+      <dialog
+        className={`co${closing ? " is-closing" : ""}${drag ? " is-dragging" : ""}`}
+        ref={sheet}
+        data-lenis-prevent
+        aria-labelledby="co-title"
+        tabIndex={-1}
+        style={drag ? ({ "--drag": `${drag}px` } as React.CSSProperties) : undefined}
+        onClick={(e) => {
+          // a click on the backdrop (outside the panel) closes
+          const r = e.currentTarget.getBoundingClientRect();
+          if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) close();
+        }}
+      >
+        <div className="co__grab" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd} aria-hidden="true">
+          <span />
+        </div>
 
-        <form action={action} className="sheet__form" noValidate onSubmit={() => track("checkout_submit", { slug, currency })}>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="currency" value={currency} />
-          <div className="field">
-            <label htmlFor="b-name">Full name</label>
-            <input
-              id="b-name"
-              name="name"
-              autoComplete="name"
-              defaultValue={v.name}
-              aria-invalid={err.name ? true : undefined}
-              aria-describedby={err.name ? "b-name-err" : undefined}
-            />
-            {err.name && (
-              <p className="field__err" id="b-name-err">
-                {err.name}
-              </p>
-            )}
-          </div>
-          <div className="field">
-            <label htmlFor="b-email">Email — your book is delivered here</label>
-            <input
-              id="b-email"
-              name="email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              defaultValue={v.email}
-              aria-invalid={err.email ? true : undefined}
-              aria-describedby={err.email ? "b-email-err" : undefined}
-            />
-            {err.email && (
-              <p className="field__err" id="b-email-err">
-                {err.email}
-              </p>
-            )}
-          </div>
-          <button className="button button--ink sheet__pay" type="submit" disabled={pending}>
-            <span className="seal-dot" />
-            {pending ? "Starting secure checkout…" : `Pay ${fmt(price, currency)}`}
-          </button>
-          {state.status === "error" && state.message && !state.fieldErrors && (
-            <p className="consult__error" role="alert">
-              {state.message}
-            </p>
-          )}
-          <p className="sheet__secure">
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-              <rect x="3" y="6.2" width="8" height="5.6" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.1" />
-              <path d="M4.8 6.2V4.6a2.2 2.2 0 0 1 4.4 0v1.6" fill="none" stroke="currentColor" strokeWidth="1.1" />
+        <header className="co__head" onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
+          <p className="co__kicker">
+            <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden>
+              <rect x="3" y="6.2" width="8" height="5.6" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M4.8 6.2V4.6a2.2 2.2 0 0 1 4.4 0v1.6" fill="none" stroke="currentColor" strokeWidth="1.2" />
             </svg>
-            Secure payment by Paystack — card, bank transfer or USSD. We never see your card details.
+            Secure checkout
           </p>
-        </form>
+          <button type="button" className="co__close" aria-label="Close checkout" onClick={close}>
+            <svg width="14" height="14" viewBox="0 0 18 18" aria-hidden>
+              <path d="M4 4l10 10M14 4 4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <div className="co__body">
+          {/* what you're buying */}
+          <section className="co__order" aria-label="Your order">
+            <div className="co__cover" aria-hidden="true">
+              <Book3D book={book} width={62} />
+            </div>
+            <div className="co__item">
+              <h2 id="co-title">{title}</h2>
+              <p>
+                {book.format} · {book.pages} pages · {book.author}
+              </p>
+            </div>
+            <div className="co__amount">
+              <strong>{fmt(price, currency)}</strong>
+              <span>digital edition</span>
+            </div>
+          </section>
+
+          {/* what happens next */}
+          <ol className="co__steps" aria-label="How it works">
+            <li className="is-now">
+              <span>1</span>Your details
+            </li>
+            <li>
+              <span>2</span>Pay securely
+            </li>
+            <li>
+              <span>3</span>In your inbox
+            </li>
+          </ol>
+
+          <form id="co-form" action={action} className="co__form" noValidate onSubmit={() => track("checkout_submit", { slug, currency })}>
+            <input type="hidden" name="slug" value={slug} />
+            <input type="hidden" name="currency" value={currency} />
+
+            <div className={`co__field${err.name ? " is-invalid" : ""}`}>
+              <label htmlFor="b-name">Full name</label>
+              <input
+                id="b-name"
+                name="name"
+                autoComplete="name"
+                placeholder="As you'd like it on your receipt"
+                defaultValue={v.name}
+                aria-invalid={err.name ? true : undefined}
+                aria-describedby={err.name ? "b-name-err" : undefined}
+              />
+              {err.name && (
+                <p className="co__err" id="b-name-err">
+                  {err.name}
+                </p>
+              )}
+            </div>
+
+            <div className={`co__field${emailErr ? " is-invalid" : ""}${emailOk ? " is-valid" : ""}`}>
+              <label htmlFor="b-email">Email address</label>
+              <div className="co__input">
+                <input
+                  id="b-email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  defaultValue={v.email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setEmailTouched(true)}
+                  aria-invalid={emailErr ? true : undefined}
+                  aria-describedby={emailErr ? "b-email-err" : "b-email-hint"}
+                />
+                <svg className="co__tick" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M5.5 10.4l3 3 6-6.6" />
+                </svg>
+              </div>
+              {emailErr ? (
+                <p className="co__err" id="b-email-err">
+                  {emailErr}
+                </p>
+              ) : (
+                <p className="co__hint" id="b-email-hint">
+                  Your download link is sent here, so double-check it.
+                </p>
+              )}
+            </div>
+
+            {state.status === "error" && state.message && !state.fieldErrors && (
+              <p className="co__alert" role="alert">
+                {state.message}
+              </p>
+            )}
+          </form>
+
+          <ul className="co__promise">
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M3.5 6.5l6.5 4.5 6.5-4.5M4 5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+              </svg>
+              Download link emailed the moment payment clears
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 5.5V10l3 2M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14z" />
+              </svg>
+              Works for {downloads.hours} hours, up to {downloads.uses} downloads
+            </li>
+          </ul>
+        </div>
+
+        {/* pinned to the bottom on phones, always in thumb reach */}
+        <footer className="co__pay">
+          <button className="co__btn" type="submit" form="co-form" disabled={pending} aria-busy={pending}>
+            {pending ? (
+              <>
+                <span className="co__spin" aria-hidden="true" />
+                Connecting to Paystack…
+              </>
+            ) : (
+              <>
+                <svg width="15" height="15" viewBox="0 0 14 14" aria-hidden>
+                  <rect x="3" y="6.2" width="8" height="5.6" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.3" />
+                  <path d="M4.8 6.2V4.6a2.2 2.2 0 0 1 4.4 0v1.6" fill="none" stroke="currentColor" strokeWidth="1.3" />
+                </svg>
+                Pay {fmt(price, currency)}
+              </>
+            )}
+          </button>
+          <div className="co__trust">
+            <span>
+              Secured by <b>Paystack</b>
+            </span>
+            <span className="co__methods" aria-label="Card, bank transfer or USSD">
+              <i>Card</i>
+              <i>Transfer</i>
+              <i>USSD</i>
+            </span>
+          </div>
+        </footer>
       </dialog>
     </div>
   );
