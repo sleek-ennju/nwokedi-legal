@@ -5,15 +5,12 @@ import { useActionState, useCallback, useEffect, useRef, useState } from "react"
 import { startCheckout, type CheckoutState } from "@/app/actions/checkout";
 import { track } from "@/lib/analytics";
 import type { Book, Currency } from "@/lib/books/types";
-import Book3D from "./Book3D";
 import SampleReader from "./SampleReader";
 import "./checkout.css";
 
 type Props = {
   book: Book;
   available: boolean;
-  /** the live download-link policy from Settings, shown as a promise in checkout */
-  downloads: { hours: number; uses: number };
 };
 
 const fmt = (n: number, c: Currency) =>
@@ -30,7 +27,7 @@ const lenis = () => (window as unknown as { __lenis?: Lenisish }).__lenis;
  * fields, one button to Paystack. Side sheet on desktop; a bottom sheet with a
  * drag handle and a pinned pay bar on phones.
  */
-export default function BuyPanel({ book, available, downloads }: Props) {
+export default function BuyPanel({ book, available }: Props) {
   const { slug, title, price: prices } = book;
   const [currency, setCurrency] = useState<Currency>("NGN");
   const [state, action, pending] = useActionState<CheckoutState, FormData>(startCheckout, { status: "idle" });
@@ -179,21 +176,10 @@ export default function BuyPanel({ book, available, downloads }: Props) {
         </header>
 
         <div className="co__body">
-          {/* what you're buying */}
-          <section className="co__order" aria-label="Your order">
-            <div className="co__cover" aria-hidden="true">
-              <Book3D book={book} width={62} />
-            </div>
-            <div className="co__item">
-              <h2 id="co-title">{title}</h2>
-              <p>
-                {book.format} · {book.pages} pages · {book.author}
-              </p>
-            </div>
-            <div className="co__amount">
-              <strong>{fmt(price, currency)}</strong>
-              <span>digital edition</span>
-            </div>
+          {/* what you're buying: one line */}
+          <section className="co__summary" aria-label="Your order">
+            <h2 id="co-title">{title}</h2>
+            <strong>{fmt(price, currency)}</strong>
           </section>
 
           {/* what happens next */}
@@ -232,7 +218,7 @@ export default function BuyPanel({ book, available, downloads }: Props) {
             </div>
 
             <div className={`co__field${emailErr ? " is-invalid" : ""}${emailOk ? " is-valid" : ""}`}>
-              <label htmlFor="b-email">Email address</label>
+              <label htmlFor="b-email">Email</label>
               <div className="co__input">
                 <input
                   id="b-email"
@@ -240,24 +226,20 @@ export default function BuyPanel({ book, available, downloads }: Props) {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="you@example.com"
+                  placeholder="Where we'll send your book"
                   defaultValue={v.email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setEmailTouched(true)}
                   aria-invalid={emailErr ? true : undefined}
-                  aria-describedby={emailErr ? "b-email-err" : "b-email-hint"}
+                  aria-describedby={emailErr ? "b-email-err" : undefined}
                 />
                 <svg className="co__tick" viewBox="0 0 20 20" aria-hidden="true">
                   <path d="M5.5 10.4l3 3 6-6.6" />
                 </svg>
               </div>
-              {emailErr ? (
+              {emailErr && (
                 <p className="co__err" id="b-email-err">
                   {emailErr}
-                </p>
-              ) : (
-                <p className="co__hint" id="b-email-hint">
-                  Your download link is sent here, so double-check it.
                 </p>
               )}
             </div>
@@ -268,21 +250,6 @@ export default function BuyPanel({ book, available, downloads }: Props) {
               </p>
             )}
           </form>
-
-          <ul className="co__promise">
-            <li>
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M3.5 6.5l6.5 4.5 6.5-4.5M4 5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
-              </svg>
-              Download link emailed the moment payment clears
-            </li>
-            <li>
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M10 5.5V10l3 2M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14z" />
-              </svg>
-              Works for {downloads.hours} hours, up to {downloads.uses} downloads
-            </li>
-          </ul>
         </div>
 
         {/* pinned to the bottom on phones, always in thumb reach */}
@@ -303,16 +270,9 @@ export default function BuyPanel({ book, available, downloads }: Props) {
               </>
             )}
           </button>
-          <div className="co__trust">
-            <span>
-              Secured by <b>Paystack</b>
-            </span>
-            <span className="co__methods" aria-label="Card, bank transfer or USSD">
-              <i>Card</i>
-              <i>Transfer</i>
-              <i>USSD</i>
-            </span>
-          </div>
+          <p className="co__trust">
+            Secured by <b>Paystack</b>
+          </p>
         </footer>
       </dialog>
     </div>

@@ -108,74 +108,43 @@
 
 .co__body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 10px var(--co-pad) 24px;
-  display: grid;
-  align-content: start;
-  gap: 22px;
+  padding: 8px var(--co-pad) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.co__body > * {
+  flex: none;
 }
 
-/* the order card: what you're buying, in the brand's Chambers palette */
-.co__order {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 14px 16px;
-  padding: 18px 18px 16px;
-  border-radius: 16px;
-  overflow: hidden;
-  color: #e9e1ce;
-  background:
-    radial-gradient(90% 120% at 0% 0%, rgba(237, 175, 36, 0.16), transparent 60%),
-    linear-gradient(150deg, #1c2d4a, #101c2f);
-  box-shadow: 0 18px 40px -24px rgba(11, 19, 34, 0.6);
-  animation: co-rise 600ms var(--co-ease) 80ms both;
-}
-.co__cover {
-  grid-row: 1 / 3;
-  display: grid;
-  place-items: center;
-  width: 74px;
-  perspective: 600px;
-}
-.co__cover .book3d {
-  --ry: -22deg;
-}
-.co__item h2 {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: 1.45rem;
-  line-height: 1.08;
-  color: #fff8e8;
-  text-wrap: balance;
-}
-.co__item p {
-  margin: 6px 0 0;
-  font-size: 12.5px;
-  color: rgba(233, 225, 206, 0.7);
-}
-.co__amount {
+/* what you're buying: one quiet line */
+.co__summary {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(233, 225, 206, 0.14);
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(22, 37, 61, 0.12);
+  animation: co-rise 600ms var(--co-ease) 80ms both;
 }
-.co__amount strong {
+.co__summary h2 {
+  margin: 0;
   font-family: var(--serif);
   font-weight: 500;
-  font-size: 1.9rem;
-  line-height: 1;
-  color: #fff8e8;
-  font-variant-numeric: lining-nums;
+  font-size: 1.5rem;
+  line-height: 1.12;
+  text-wrap: balance;
 }
-.co__amount span {
-  font-size: 12.5px;
-  color: rgba(233, 225, 206, 0.65);
+.co__summary strong {
+  flex: none;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.12;
+  font-variant-numeric: lining-nums;
 }
 
 /* how it works */
@@ -304,13 +273,9 @@
     stroke-dashoffset: 0;
   }
 }
-.co__hint,
 .co__err {
   margin: 0;
   font-size: 12.5px;
-}
-.co__hint {
-  color: rgba(22, 37, 61, 0.62);
 }
 .co__err {
   color: #b3261e;
@@ -322,33 +287,6 @@
   background: rgba(179, 38, 30, 0.07);
   color: #8e1c16;
   font-size: 13.5px;
-}
-
-/* what you can count on */
-.co__promise {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-  font-size: 13px;
-  color: rgba(22, 37, 61, 0.72);
-  animation: co-rise 600ms var(--co-ease) 260ms both;
-}
-.co__promise li {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.co__promise svg {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: #856244;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* pay bar */
@@ -425,10 +363,8 @@
   }
 }
 .co__trust {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  margin: 0;
+  text-align: center;
   font-size: 12px;
   color: rgba(22, 37, 61, 0.6);
 }
@@ -436,19 +372,6 @@
   color: var(--navy);
   font-weight: 600;
 }
-.co__methods {
-  display: flex;
-  gap: 5px;
-}
-.co__methods i {
-  font-style: normal;
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(22, 37, 61, 0.14);
-  background: rgba(255, 255, 255, 0.55);
-}
-
 @keyframes co-rise {
   from {
     opacity: 0;
@@ -499,7 +422,8 @@
   .co__body {
     gap: 18px;
   }
-  .co__item h2 {
+  .co__summary h2,
+  .co__summary strong {
     font-size: 1.3rem;
   }
   .co__steps {
@@ -525,10 +449,9 @@
   .co[open],
   .co.is-closing,
   .co::backdrop,
-  .co__order,
+  .co__summary,
   .co__steps,
   .co__form,
-  .co__promise,
   .co__btn::after,
   .co__field.is-invalid input {
     animation: none !important;
