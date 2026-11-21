@@ -38,8 +38,7 @@ export const site = {
   /** the small "Built by" credit in the footer */
   credit: {
     name: "CodeWithSleek",
-    // TODO(Emmanuel): the studio website. Until it's set the credit shows without a link.
-    url: process.env.NEXT_PUBLIC_CREDIT_URL ?? "",
+    url: process.env.NEXT_PUBLIC_CREDIT_URL ?? "https://www.codewithsleek.com/",
   },
   principal: {
     name: process.env.NEXT_PUBLIC_PRINCIPAL_NAME ?? "",
