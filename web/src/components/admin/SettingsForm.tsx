@@ -38,7 +38,7 @@ export default function SettingsForm({ settings, disabled }: { settings: Setting
 
       <section className="a-card">
         <h2>Download links</h2>
-        <p className="a-card__sub">How long a buyer&rsquo;s emailed link works, and how many times it can be used. Applies to new links.</p>
+        <p className="a-card__sub">How long a buyer&rsquo;s download link works, and how many times it can be used. The book itself never expires: once downloaded, it&rsquo;s theirs to keep. Applies to new links.</p>
         <div className="a-form">
           <label className="a-field">
             <span className="a-field__label">Valid for (hours)</span>

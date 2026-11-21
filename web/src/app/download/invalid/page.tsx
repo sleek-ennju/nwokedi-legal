@@ -27,7 +27,7 @@ const COPY: Record<string, { title: string; body: string }> = {
   },
   link: {
     title: "This link has expired.",
-    body: "Download links are time-limited and allow a few downloads, to keep your copy secure. Reply to your order email or get in touch with your order reference, and we'll send a fresh one.",
+    body: "Download links are time-limited, to protect the book from being shared around (any copy you already saved is yours to keep). Reply to your order email or get in touch with your order reference, and we'll send a fresh one.",
   },
 };
 

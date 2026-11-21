@@ -141,7 +141,7 @@ async function Result({ searchParams }: { searchParams: PageProps<"/checkout/suc
             Download your book
           </a>
           <p className="done__fine">
-            {book?.format ?? "PDF"} · works for {downloads.hours} hours, up to {downloads.uses} downloads. Save the file somewhere safe.
+            This download link works for {downloads.hours} hours (up to {downloads.uses} downloads). Once saved, the {book?.format ?? "PDF"} is yours to keep.
           </p>
         </>
       )}

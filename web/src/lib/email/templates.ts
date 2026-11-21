@@ -27,7 +27,7 @@ export function bookDeliveryEmail(d: Delivery) {
     `Thank you for buying ${d.title}. Your copy is ready:`,
     d.url,
     "",
-    `This link works for ${d.expiresHours} hours and up to ${d.maxUses} downloads, so save the file somewhere safe.`,
+    `This download link works for ${d.expiresHours} hours (up to ${d.maxUses} downloads). Once saved, the book is yours to keep.`,
     `Order reference: ${d.reference}`,
     "",
     "If the link has expired or anything goes wrong, just reply to this email and we'll send a fresh one.",
@@ -57,7 +57,7 @@ export function bookDeliveryEmail(d: Delivery) {
           </a>
         </td></tr>
         <tr><td style="padding:0 32px 30px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#5b6577;">
-          This link works for <b>${d.expiresHours} hours</b> and up to <b>${d.maxUses} downloads</b>, so save the file somewhere safe.
+          This download link works for <b>${d.expiresHours} hours</b> (up to <b>${d.maxUses} downloads</b>). Once saved, the book is yours to keep.
           If it expires or anything goes wrong, simply reply to this email and we'll send a fresh link.
           <br><br>Order reference: <span style="font-family:monospace;color:#16253D;">${esc(d.reference)}</span>
         </td></tr>
