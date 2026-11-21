@@ -423,7 +423,10 @@ em {
 /* ───────── Chapters ───────── */
 .chapters {
   position: relative;
-  height: 520vh;
+  /* 104vh hand-off from the hero + 4 practices × 52vh (was 104vh each: halved so
+     each next practice arrives after about half a screen of scrolling).
+     Keep in step with HANDOFF / H in experience/scroll.ts. */
+  height: 312vh;
 }
 .chapters__sticky {
   position: sticky;

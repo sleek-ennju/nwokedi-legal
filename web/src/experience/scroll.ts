@@ -9,11 +9,20 @@ gsap.registerPlugin(ScrollTrigger);
 let lenis: Lenis | null = null;
 export const getLenis = () => lenis;
 
+/**
+ * Chapter pacing (must match `.chapters { height }` in globals.css: 312vh).
+ * The section's scroll range = its height. The first 104vh is the hand-off from
+ * the hero (the section scrolling into view); then four practices of 52vh each.
+ * In timeline units one practice = 1, so the hand-off is H = 2 (104 / 52).
+ */
+const H = 2;
+const HANDOFF = H / (H + 4); // share of the scroll range spent on the hand-off (= 1/3)
+
 /** Scroll to a practice chapter by index (lands mid-chapter, inside the pinned range). */
 export function scrollToChapter(idx: number) {
   const sec = document.querySelector<HTMLElement>(".chapters");
   if (!sec) return;
-  const y = sec.offsetTop - innerHeight + sec.offsetHeight * (0.2 + 0.8 * ((idx + 0.5) / 4));
+  const y = sec.offsetTop - innerHeight + sec.offsetHeight * (HANDOFF + (1 - HANDOFF) * ((idx + 0.5) / 4));
   if (lenis) lenis.scrollTo(y, { duration: 2 });
   else scrollTo({ top: y, behavior: "smooth" });
 }
@@ -124,21 +133,23 @@ export function initScroll() {
         scrub: reduced ? true : 1.1,
         invalidateOnRefresh: true,
         onUpdate: (st) => {
-          // first 1/5 = hand-off from the hero, then 4 equal chapters
-          const p = (st.progress - 0.2) / 0.8;
+          // the hand-off from the hero, then 4 equal chapters
+          const p = (st.progress - HANDOFF) / (1 - HANDOFF);
           setActive(p < 0 ? 0 : Math.min(3, Math.floor(p * 4)));
           if (fill) fill.style.transform = `scaleY(${gsap.utils.clamp(0, 1, p)})`;
         },
       },
     });
 
-    tl.to(S, { x: side.x, y: side.y, scale: side.scale, rotY: turns[0], duration: 1 }, 0)
-      .to(".mark", { opacity: 0.35, duration: 1 }, 0)
-      .to(".fallback", { opacity: 0, duration: 0.6 }, 0)
-      .to(S, { rotY: turns[1], rotX: 0.06, duration: 0.6, ease: "power2.inOut" }, 1.7)
-      .to(S, { rotY: turns[2], rotX: -0.05, duration: 0.6, ease: "power2.inOut" }, 2.7)
-      .to(S, { rotY: turns[3], rotX: 0.0, duration: 0.6, ease: "power2.inOut" }, 3.7)
-      .to({}, { duration: 0.7 }, 4.3);
+    // timeline: hand-off 0→H, then practice k spans H+k → H+k+1; each coin-turn is
+    // centred on the boundary between two practices (H+k ± 0.3), ending at H+4.
+    tl.to(S, { x: side.x, y: side.y, scale: side.scale, rotY: turns[0], duration: H }, 0)
+      .to(".mark", { opacity: 0.35, duration: H }, 0)
+      .to(".fallback", { opacity: 0, duration: H * 0.6 }, 0)
+      .to(S, { rotY: turns[1], rotX: 0.06, duration: 0.6, ease: "power2.inOut" }, H + 0.7)
+      .to(S, { rotY: turns[2], rotX: -0.05, duration: 0.6, ease: "power2.inOut" }, H + 1.7)
+      .to(S, { rotY: turns[3], rotX: 0.0, duration: 0.6, ease: "power2.inOut" }, H + 2.7)
+      .to({}, { duration: 0.7 }, H + 3.3);
 
     gsap.fromTo(
       K,
