@@ -4,6 +4,7 @@ import { toast } from "@/lib/toast";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Markdown } from "@/lib/articles/markdown";
+import ArticleCover from "@/components/articles/ArticleCover";
 import { articleImageTarget, deleteArticle, saveArticle, type ArticleResult } from "@/app/admin/actions/articles";
 import { putSigned, toWebp } from "./upload-client";
 
@@ -20,7 +21,7 @@ export type EditableArticle = {
   state: "draft" | "scheduled" | "published";
 };
 
-type Props = { initial: EditableArticle; mode: "create" | "update"; practices: { id: string; name: string }[] };
+type Props = { initial: EditableArticle; mode: "create" | "update"; practices: { id: string; name: string }[]; author: string };
 
 const slugify = (s: string) =>
   s
@@ -31,13 +32,24 @@ const slugify = (s: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 90);
 
+/** While typing: keep hyphens (even a trailing one), turn spaces and stray characters into hyphens. */
+const slugTyping = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, 90);
+
 /** ISO ⇄ "YYYY-MM-DDTHH:mm" in Lagos time (UTC+1, no daylight saving). */
 const toLagosInput = (iso: string | null) => (iso ? new Date(Date.parse(iso) + 3600_000).toISOString().slice(0, 16) : "");
 const fromLagosInput = (v: string) => (v ? new Date(Date.parse(`${v}:00Z`) - 3600_000).toISOString() : null);
 
 const STATE_LABEL = { draft: "Draft", scheduled: "Scheduled", published: "Published" } as const;
 
-export default function ArticleEditor({ initial, mode, practices }: Props) {
+export default function ArticleEditor({ initial, mode, practices, author }: Props) {
   const router = useRouter();
   const [a, setA] = useState(initial);
   const [slugTouched, setSlugTouched] = useState(mode === "update");
@@ -136,10 +148,15 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
 
   function save(intent: "draft" | "publish" | "schedule") {
     setResult(null);
+    const when = intent === "schedule" ? fromLagosInput(schedule) : null;
+    if (intent === "schedule" && (!when || Date.parse(when) <= Date.now())) {
+      setResult({ ok: false, message: "That time has already passed. Pick a later one, even a minute from now.", errors: { publishAt: "Must be later than now" } });
+      return;
+    }
     startSaving(async () => {
       const r = await saveArticle(
         {
-          slug: a.slug,
+          slug: slugify(a.slug),
           title: a.title,
           excerpt: a.excerpt,
           body: a.body,
@@ -148,7 +165,7 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
           cover_alt: a.cover_alt,
           featured: a.featured,
           intent,
-          publishAt: intent === "schedule" ? fromLagosInput(schedule) : null,
+          publishAt: when,
         },
         mode
       );
@@ -293,8 +310,9 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
                 disabled={mode === "update"}
                 onChange={(e) => {
                   setSlugTouched(true);
-                  set("slug", slugify(e.target.value));
+                  set("slug", slugTyping(e.target.value));
                 }}
+                onBlur={(e) => set("slug", slugify(e.target.value))}
               />
             </div>
             {err("slug") && <span className="a-msg a-msg--err">{err("slug")}</span>}
@@ -322,7 +340,10 @@ export default function ArticleEditor({ initial, mode, practices }: Props) {
             </>
           ) : (
             <>
-              <p className="a-small a-mute">Optional. Without one, the article gets a typographic cover in the brand style.</p>
+              <div className="ae__house-cover">
+                <ArticleCover title={a.title} practice={a.practice} practiceName={practices.find((p) => p.id === a.practice)?.name ?? "General"} author={author} />
+              </div>
+              <p className="a-small a-mute">This is the house cover readers will see. It follows the title and practice area as you type. Upload an image only if you want a photograph instead.</p>
               <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => coverInput.current?.click()} disabled={!!busy}>
                 Upload a cover
               </button>

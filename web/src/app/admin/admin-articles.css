@@ -146,3 +146,11 @@
 .ws-clear-card .a-btn {
   margin-top: 4px;
 }
+.ae__house-cover {
+  justify-self: stretch;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 14px 30px -20px rgba(22, 37, 61, 0.5);
+}

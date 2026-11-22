@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ArticleCover from "@/components/articles/ArticleCover";
 import ShareLinks from "@/components/articles/ShareLinks";
 import portrait from "@/assets/photos/gaze-portrait.jpg";
 import { getArticle, getArticles } from "@/lib/articles/catalog";
@@ -124,12 +125,14 @@ async function ArticleContent({ params }: { params: PageProps<"/articles/[slug]"
           </div>
         </header>
 
-        {a.cover_url && (
-          <figure className="art__cover">
-            {/* eslint-disable-next-line @next/next/no-img-element -- cover from our media bucket */}
+        <figure className="art__cover">
+          {a.cover_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- cover from our media bucket
             <img src={a.cover_url} alt={a.cover_alt ?? ""} />
-          </figure>
-        )}
+          ) : (
+            <ArticleCover title={a.title} practice={a.practice} practiceName={a.practiceName} author={author} />
+          )}
+        </figure>
 
         <div className="art__layout">
           {toc.length >= 3 && (

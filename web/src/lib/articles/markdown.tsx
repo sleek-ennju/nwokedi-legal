@@ -129,7 +129,12 @@ export function Markdown({ source, className }: { source: string; className?: st
     // paragraph: consecutive plain lines
     const para: string[] = [];
     while (i < lines.length && lines[i].trim() && !/^(##|###)\s|^>|^[-*]\s+|^\d+[.)]\s+|^!\[|^(-{3,}|\*{3,})$/.test(lines[i].trim())) para.push(lines[i++].trim());
-    blocks.push(<p key={key}>{inline(para.join(" "), key)}</p>);
+    // a single line break inside a paragraph is kept, exactly as it was typed
+    blocks.push(
+      <p key={key}>
+        {para.flatMap((l, j) => (j ? [<br key={`${key}-br${j}`} />, ...inline(l, `${key}-${j}`)] : inline(l, `${key}-${j}`)))}
+      </p>
+    );
   }
 
   return <div className={className}>{blocks}</div>;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import ArticleEditor from "@/components/admin/ArticleEditor";
 import { requireAdmin } from "@/lib/admin/session";
 import { PRACTICE_OPTIONS } from "@/lib/articles/catalog";
+import { site } from "@/lib/site";
 import "../../../../articles.css";
 
 export const metadata: Metadata = { title: "New article" };
@@ -23,6 +24,7 @@ export default async function NewArticlePage() {
       <ArticleEditor
         mode="create"
         practices={PRACTICE_OPTIONS}
+        author={site.principal.name ? `${site.principal.name} Esq.` : site.name}
         initial={{ slug: "", title: "", excerpt: "", body: "", practice: PRACTICE_OPTIONS[0].id, cover_url: null, cover_alt: null, featured: false, publish_at: null, state: "draft" }}
       />
     </>

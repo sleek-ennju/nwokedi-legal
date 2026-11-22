@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import AdminIcon, { type IconName } from "./AdminIcon";
 
 const LINKS: [string, string, IconName][] = [
@@ -22,8 +22,11 @@ export default function AdminNav({ badges }: { badges?: Partial<Record<string, R
   const active = (href: string) => (href === "/admin" ? path === href : path === href || path.startsWith(`${href}/`));
   return (
     <nav className="a-nav" aria-label="Admin">
-      {LINKS.map(([href, label, icon]) => (
-        <Link key={href} href={href} aria-current={active(href) ? "page" : undefined}>
+      {LINKS.map(([href, label, icon], i) => (
+        <Link key={href} href={href} aria-current={active(href) ? "page" : undefined} style={{ "--i": i } as CSSProperties}>
+          <span className="a-nav__num" aria-hidden="true">
+            {String(i + 1).padStart(2, "0")}
+          </span>
           <AdminIcon name={icon} />
           <span className="a-nav__label">{label}</span>
           {badges?.[href]}

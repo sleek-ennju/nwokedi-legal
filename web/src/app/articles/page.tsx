@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ArticleCover from "@/components/articles/ArticleCover";
 import PracticeFilter from "@/components/articles/PracticeFilter";
 import { getArticles, type Article } from "@/lib/articles/catalog";
 import { serializeJsonLd } from "@/lib/jsonld";
@@ -87,9 +88,7 @@ export default async function ArticlesPage() {
                   // eslint-disable-next-line @next/next/no-img-element -- cover from our media bucket
                   <img src={featured.cover_url} alt={featured.cover_alt ?? ""} />
                 ) : (
-                  <span className="art-feature__mark" aria-hidden="true">
-                    {featured.practiceName}
-                  </span>
+                  <ArticleCover title={featured.title} practice={featured.practice} practiceName={featured.practiceName} author={author} />
                 )}
               </div>
               <div className="art-feature__text">

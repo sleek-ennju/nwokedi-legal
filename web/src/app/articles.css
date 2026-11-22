@@ -371,8 +371,8 @@
 .prose > * + * {
   margin-top: 1.15em;
 }
-.prose p {
-  margin: 0;
+:where(.prose) p {
+  margin: 0; /* low specificity, so the block rhythm above sets the gap between paragraphs */
 }
 .prose h2,
 .prose h3 {
@@ -582,5 +582,169 @@
   }
   .art-feature__visual img {
     transition: none;
+  }
+}
+
+/* ── drop cap: the opening letter set large, as in a printed essay ── */
+.prose > p:first-child {
+  display: flow-root; /* a one-line opening still holds its capital; the next paragraph starts clean */
+}
+.prose > p:first-child::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 4.7em;
+  line-height: 0.8;
+  margin: 0.07em 0.09em 0 -0.03em;
+  color: var(--navy);
+}
+
+/* ── house cover (ArticleCover) ─────────────────────────────────── */
+.acv {
+  position: relative;
+  container-type: inline-size;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* % padding: a container's own cqi would resolve against the page, not itself */
+  padding: 5.6% 6.2%;
+  color: var(--acv-ink);
+  background:
+    radial-gradient(60% 70% at 12% 0%, color-mix(in srgb, #edaf24 22%, transparent), transparent 70%),
+    radial-gradient(80% 90% at 100% 100%, rgba(0, 0, 0, 0.22), transparent 70%),
+    var(--acv-bg);
+}
+.acv--vellum {
+  background:
+    radial-gradient(60% 70% at 12% 0%, rgba(237, 175, 36, 0.16), transparent 70%),
+    radial-gradient(80% 90% at 100% 100%, rgba(133, 98, 68, 0.14), transparent 70%),
+    var(--acv-bg);
+}
+/* fine paper grain */
+.acv::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.18;
+  background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+.acv__seal {
+  position: absolute;
+  z-index: -1;
+  top: 60%;
+  right: -12cqi;
+  width: 62cqi;
+  height: 62cqi;
+  translate: 0 -50%;
+  color: var(--acv-foil);
+  opacity: 0.34;
+  overflow: visible;
+  transition: rotate 1.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+}
+.acv__seal circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.8;
+}
+.acv__seal text {
+  fill: currentColor;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+}
+.acv__seal image {
+  opacity: 0.9;
+}
+.art-feature:hover .acv__seal {
+  rotate: -14deg;
+  opacity: 0.44;
+}
+.acv__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqi;
+  font-family: var(--sans);
+  font-size: max(10px, 1.7cqi);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.acv__house {
+  color: var(--acv-foil);
+}
+.acv__tag {
+  padding: 0.5em 1.1em 0.45em;
+  border: 1px solid color-mix(in srgb, var(--acv-foil) 60%, transparent);
+  border-radius: 99px;
+  color: var(--acv-ink);
+  opacity: 0.85;
+}
+.acv__body {
+  display: grid;
+  justify-items: start;
+  gap: 2.1cqi;
+  max-width: 68%;
+}
+.acv__practice {
+  font-family: var(--sans);
+  font-size: max(10px, 1.7cqi);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--acv-foil);
+}
+.acv__title {
+  font-family: var(--serif);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+.acv__title--l {
+  font-size: 8.6cqi;
+}
+.acv__title--m {
+  font-size: 6.7cqi;
+}
+.acv__title--s {
+  font-size: 5.3cqi;
+}
+.acv__rule {
+  width: 9cqi;
+  height: 1px;
+  background: var(--acv-foil);
+}
+.acv__by {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: max(12px, 2.4cqi);
+  opacity: 0.86;
+}
+
+/* placements */
+.art-feature__visual .acv {
+  position: absolute;
+  inset: 0;
+}
+.art__cover .acv {
+  aspect-ratio: 16 / 7;
+  border-radius: 6px;
+}
+@media (max-width: 700px) {
+  .art__cover .acv {
+    aspect-ratio: 4 / 3;
+  }
+  .acv__body {
+    max-width: 82%;
   }
 }

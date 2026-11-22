@@ -5,6 +5,7 @@ import ArticleEditor from "@/components/admin/ArticleEditor";
 import { getArticleAdmin } from "@/lib/admin/articles";
 import { day } from "@/lib/admin/format";
 import { PRACTICE_OPTIONS } from "@/lib/articles/catalog";
+import { site } from "@/lib/site";
 import "../../../../articles.css";
 
 export const metadata: Metadata = { title: "Edit article" };
@@ -31,6 +32,7 @@ export default async function EditArticlePage({ params }: PageProps<"/admin/arti
         key={a.updated_at}
         mode="update"
         practices={PRACTICE_OPTIONS}
+        author={site.principal.name ? `${site.principal.name} Esq.` : site.name}
         initial={{
           slug: a.slug,
           title: a.title,

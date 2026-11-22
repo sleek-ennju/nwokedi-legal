@@ -47,8 +47,8 @@ export async function saveArticle(input: unknown, mode: "create" | "update"): Pr
     if (a.body.trim().split(/\s+/).length < 60) return { ok: false, message: "That's a little short to publish — write at least a few paragraphs.", errors: { body: "Too short to publish" } };
     if (!a.excerpt) return { ok: false, message: "Add a short summary: it's what readers and Google see first.", errors: { excerpt: "Needed to publish" } };
   }
-  if (a.intent === "schedule" && (!a.publishAt || Date.parse(a.publishAt) <= Date.now() + 60_000)) {
-    return { ok: false, message: "Pick a date and time in the future to schedule.", errors: { publishAt: "Must be in the future" } };
+  if (a.intent === "schedule" && (!a.publishAt || Date.parse(a.publishAt) <= Date.now())) {
+    return { ok: false, message: "That time has already passed. Pick a later one, even a minute from now.", errors: { publishAt: "Must be later than now" } };
   }
 
   const { data: existing, error: readErr } = await c.from("articles").select("slug, status, publish_at").eq("slug", a.slug).maybeSingle();

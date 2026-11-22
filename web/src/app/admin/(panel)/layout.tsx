@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AdminIcon from "@/components/admin/AdminIcon";
 import AdminNav from "@/components/admin/AdminNav";
+import AdminSide from "@/components/admin/AdminSide";
 import NotificationBell from "@/components/admin/NotificationBell";
 import { connection } from "next/server";
 import { signOut } from "../actions/auth";
@@ -12,7 +13,8 @@ import { db } from "@/lib/db/supabase";
 export default function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="a-shell">
-      <aside className="a-side">
+      <AdminSide
+        brand={
         <Link href="/admin" className="a-brand" aria-label="Nwokedi Legal admin — overview">
           {/* eslint-disable-next-line @next/next/no-img-element -- vector brand mark */}
           <img className="a-brand__lockup" src="/brand/lockup.svg" alt="" width={176} height={31} />
@@ -20,6 +22,8 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
           <img className="a-brand__emblem" src="/brand/emblem.svg" alt="" width={26} height={34} />
           <span className="a-brand__tag">Admin</span>
         </Link>
+        }
+      >
         <AdminNav
           badges={{
             "/admin/enquiries": (
@@ -44,7 +48,7 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
             </button>
           </form>
         </div>
-      </aside>
+      </AdminSide>
       <main className="a-main">
         <div className="a-top">
           <Suspense fallback={<span className="a-top__date" />}>
