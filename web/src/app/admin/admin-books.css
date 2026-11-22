@@ -449,3 +449,16 @@ select.a-input {
   .pp[open], .pp__badge { animation: none; }
   .pp__paper { transition: none; }
 }
+
+/* delete confirmation in the save rail */
+.be__confirm {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(168, 35, 28, 0.08);
+  color: #f3ecdc;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.be__save .a-small { color: rgba(233, 225, 206, 0.72); line-height: 1.5; }

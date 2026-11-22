@@ -26,7 +26,7 @@ export default function Home() {
               {site.tagline} · Est. {site.founded}
             </p>
             <h1 className="display">
-              Bringing <em className="lit">to light</em> what is yours.
+              Protecting talent, <em className="lit">securing legacies.</em>
             </h1>
           </div>
           <div className="hero__aside fade-in">

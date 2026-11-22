@@ -97,18 +97,27 @@ export async function saveBook(input: unknown, mode: "create" | "update"): Promi
   return { ok: true, message: live, slug: book.slug };
 }
 
-/** Only unsold drafts can be deleted; anything with orders must stay for the records. */
+/**
+ * Delete a book and its files. Any status can go, but a book that has orders
+ * stays for the records (receipts and downloads point at it).
+ */
 export async function deleteBook(slug: string): Promise<BookResult> {
   await requireAdmin();
   const c = client();
-  const { data } = await c.from("books").select("status").eq("slug", slug).maybeSingle();
+  const { data } = await c.from("books").select("file_path").eq("slug", slug).maybeSingle();
   if (!data) return { ok: false, message: "That book no longer exists." };
-  if (data.status !== "draft") return { ok: false, message: "Switch it to Draft first." };
-  if (await bookHasOrders(slug)) return { ok: false, message: "This book has orders, so it's kept for your records. Leave it as a draft instead." };
+  if (await bookHasOrders(slug)) return { ok: false, message: "This book has orders, so it's kept for your records. Switch it to Draft to hide it from the site." };
   const { error } = await c.from("books").delete().eq("slug", slug);
   if (error) return { ok: false, message: "Couldn't delete. Please try again." };
+  // tidy its files; a leftover file is harmless, so failures here don't undo the delete
+  await c.storage.from(FILES_BUCKET).remove([data.file_path || `${slug}.pdf`]).catch(() => {});
+  for (const folder of [`${slug}/sample`, `${slug}/cover`, slug]) {
+    const { data: files } = await c.storage.from(MEDIA_BUCKET).list(folder).catch(() => ({ data: null }));
+    const paths = (files ?? []).filter((f) => f.id).map((f) => `${folder}/${f.name}`);
+    if (paths.length) await c.storage.from(MEDIA_BUCKET).remove(paths).catch(() => {});
+  }
   updateTag(BOOKS_TAG);
-  return { ok: true, message: "Deleted." };
+  return { ok: true, message: "Book deleted." };
 }
 
 /** One-time move of the starter catalogue (src/content/books.ts) into the database. */

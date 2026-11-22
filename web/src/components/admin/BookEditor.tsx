@@ -473,22 +473,30 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
               View on the site ↗
             </a>
           )}
-          {mode === "update" && book.status === "draft" && sold === 0 && (
-            confirmDelete ? (
-              <div className="a-actions">
-                <button type="button" className="a-btn a-btn--confirm a-btn--sm" onClick={remove} disabled={saving}>
-                  Delete for good
-                </button>
-                <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => setConfirmDelete(false)}>
-                  Cancel
-                </button>
+          {mode === "update" &&
+            (sold > 0 ? (
+              <p className="a-small a-mute">
+                This book has {sold} {sold === 1 ? "sale" : "sales"}, so it can&rsquo;t be deleted: buyers&rsquo; receipts point to it. Set it to Draft to hide it from the site.
+              </p>
+            ) : confirmDelete ? (
+              <div className="be__confirm" role="alert">
+                <p>
+                  Delete <strong>{initial.title || "this book"}</strong> for good? Its page, cover, sample pages and PDF are removed. This can&rsquo;t be undone.
+                </p>
+                <div className="a-actions">
+                  <button type="button" className="a-btn a-btn--confirm a-btn--sm" onClick={remove} disabled={saving}>
+                    {saving ? "Deleting…" : "Delete for good"}
+                  </button>
+                  <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => setConfirmDelete(false)}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             ) : (
               <button type="button" className="a-btn a-btn--danger a-btn--sm" onClick={() => setConfirmDelete(true)}>
-                Delete this draft
+                Delete book
               </button>
-            )
-          )}
+            ))}
         </div>
       </aside>
     </div>
