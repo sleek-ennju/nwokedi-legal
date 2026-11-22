@@ -7,6 +7,7 @@ import Book3D from "@/components/books/Book3D";
 import { BRAND_COVERS } from "@/lib/books/cover";
 import type { Book, SamplePage } from "@/lib/books/types";
 import { bookFileInfo, deleteBook, saveBook, uploadTarget, type BookResult } from "@/app/admin/actions/books";
+import PdfPagePicker from "./PdfPagePicker";
 import type { FileInfo } from "@/lib/admin/books";
 
 type ImagePage = Extract<SamplePage, { kind: "image" }>;
@@ -242,10 +243,16 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
           <p className="a-card__sub">Whether it&rsquo;s on sale, and for how much.</p>
           <div className="a-seg" role="radiogroup" aria-label="Status">
             {STATUSES.map(([v, label, hint]) => (
-              <label key={v} className="a-seg__opt">
+              <label key={v} className={`a-seg__opt a-seg__opt--${v}`}>
                 <input type="radio" name="status" checked={book.status === v} onChange={() => set("status", v)} />
                 <span>
-                  <strong>{label}</strong>
+                  <strong>
+                    <i className="a-seg__dot" aria-hidden="true" />
+                    {label}
+                    <svg className="a-seg__tick" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3.5 8.4l2.8 2.8 6.2-6.6" />
+                    </svg>
+                  </strong>
                   <small>{hint}</small>
                 </span>
               </label>
@@ -323,9 +330,18 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
               <h2>Free sample</h2>
               <p className="a-card__sub">The pages anyone can read before buying. Stop on a cliffhanger.</p>
             </div>
-            <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => sampleInput.current?.click()} disabled={!!busy}>
-              Add pages
-            </button>
+            <div className="a-actions">
+              <PdfPagePicker
+                slug={draft.slug}
+                title={draft.title}
+                hasFile={!!file}
+                hasSample={book.sample.length > 0}
+                onAdd={(added, replace) => setPages(replace ? added : [...book.sample, ...added])}
+              />
+              <button type="button" className="a-btn a-btn--ghost a-btn--sm" onClick={() => sampleInput.current?.click()} disabled={!!busy} title="Upload page images instead">
+                Upload images
+              </button>
+            </div>
             <input ref={sampleInput} type="file" accept="image/png,image/jpeg,image/webp" multiple hidden onChange={(e) => (uploadImages(e.target.files, "sample"), (e.target.value = ""))} />
           </div>
           {pages.length ? (
@@ -369,7 +385,7 @@ export default function BookEditor({ initial, mode, file: initialFile, sold }: P
               )}
             </ol>
           ) : (
-            <p className="a-empty">No sample pages yet. Add images of the first few pages (PNG, JPEG or WebP).</p>
+            <p className="a-empty">No sample pages yet. Choose them straight from the book&rsquo;s PDF; it takes a few taps.</p>
           )}
         </section>
       </div>

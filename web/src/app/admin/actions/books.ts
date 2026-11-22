@@ -156,3 +156,13 @@ export async function bookFileInfo(slug: string): Promise<FileInfo> {
   const { data } = await client().from("books").select("file_path").eq("slug", slug).maybeSingle();
   return fileInfo(data?.file_path || `${slug}.pdf`);
 }
+
+/** A 5-minute private link so the editor can open the uploaded book to pick sample pages. */
+export async function bookFileReadUrl(slug: string): Promise<string | null> {
+  await requireAdmin();
+  if (!SLUG.test(slug)) return null;
+  const c = client();
+  const { data: row } = await c.from("books").select("file_path").eq("slug", slug).maybeSingle();
+  const { data } = await c.storage.from(FILES_BUCKET).createSignedUrl(row?.file_path || `${slug}.pdf`, 300);
+  return data?.signedUrl ?? null;
+}

@@ -96,10 +96,43 @@ select.a-input {
   border-radius: 10px;
   transition: border-color 160ms ease, background-color 160ms ease;
 }
-.a-seg__opt strong { font-weight: 500; }
-.a-seg__opt small { color: var(--a-mute); font-size: 12px; }
-.a-seg__opt:hover > span { background: rgba(22, 37, 61, 0.03); }
-.a-seg__opt input:checked + span { border-color: var(--a-ink); box-shadow: inset 0 0 0 1px var(--a-ink); background: #fff; }
+.a-seg__opt strong { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.a-seg__opt small { color: var(--a-mute); font-size: 12px; transition: color 200ms ease; }
+.a-seg__opt > span { transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease, box-shadow 220ms ease; }
+.a-seg__opt:hover > span { background: rgba(22, 37, 61, 0.04); }
+/* the status this book is on: filled, ticked, unmistakable */
+.a-seg__opt input:checked + span {
+  background: var(--a-ink);
+  border-color: var(--a-ink);
+  color: #f6efe0;
+  box-shadow: 0 10px 22px -14px rgba(22, 37, 61, 0.7);
+}
+.a-seg__opt input:checked + span small { color: rgba(246, 239, 224, 0.72); }
+.a-seg__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--a-faint); }
+.a-seg__opt--published .a-seg__dot { background: #3f9a6c; }
+.a-seg__opt--coming-soon .a-seg__dot { background: #d29a2d; }
+.a-seg__opt--draft .a-seg__dot { background: #9aa0ab; }
+.a-seg__tick {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  fill: none;
+  stroke: #edaf24;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  opacity: 0;
+}
+.a-seg__opt input:checked + span .a-seg__tick {
+  opacity: 1;
+  animation: a-seg-draw 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes a-seg-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .a-seg__opt input:checked + span .a-seg__tick { animation: none; stroke-dashoffset: 0; }
+}
 .a-seg__opt input:focus-visible + span { outline: 2px solid var(--a-focus); outline-offset: 2px; }
 
 /* editor layout */
@@ -266,3 +299,153 @@ select.a-input {
 }
 
 .a-field[hidden] { display: none; }
+
+/* ════════════ PDF page picker ════════════ */
+.pp {
+  width: min(1040px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: var(--a-bg);
+  color: var(--a-ink);
+  box-shadow: 0 40px 90px -30px rgba(11, 19, 34, 0.55);
+  overflow: hidden;
+}
+.pp[open] {
+  display: flex;
+  flex-direction: column;
+  animation: pp-in 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pp::backdrop {
+  background: rgba(11, 19, 34, 0.5);
+  backdrop-filter: blur(4px);
+}
+@keyframes pp-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+.pp__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 14px;
+  border-bottom: 1px solid var(--a-line);
+}
+.pp__head h2 { font-size: 26px; }
+.pp__head p { margin-top: 6px !important; color: var(--a-mute); font-size: 14px; }
+.pp__empty {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--a-mute);
+}
+.pp__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 14px;
+  color: var(--a-mute);
+}
+.pp__bar b { color: var(--a-ink); font-weight: 600; }
+.pp__grid {
+  list-style: none;
+  margin: 0;
+  padding: 6px 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 18px 16px;
+}
+.pp__page {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+.pp__paper {
+  position: relative;
+  display: block;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+  aspect-ratio: 8.5 / 11;
+  box-shadow: 0 1px 2px rgba(22, 37, 61, 0.12), 0 8px 18px -12px rgba(22, 37, 61, 0.35);
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  transition: outline-color 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease;
+}
+.pp__paper canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.pp__page.is-ready canvas { opacity: 1; }
+.pp__page:hover .pp__paper { transform: translateY(-2px); }
+.pp__page:focus-visible .pp__paper { outline-color: var(--a-focus); }
+.pp__page.is-on .pp__paper {
+  outline-color: var(--a-ink);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px -14px rgba(22, 37, 61, 0.6);
+}
+.pp__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: var(--a-ink);
+  color: #fbe7b4;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(237, 175, 36, 0.45);
+  animation: pp-pop 260ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+@keyframes pp-pop { from { transform: scale(0.5); opacity: 0; } }
+/* the cliffhanger: the part below the cut fades away, as it will on the site */
+.pp__cut {
+  position: absolute;
+  inset: 55% 0 0 0;
+  background: linear-gradient(180deg, rgba(243, 238, 227, 0.2), rgba(243, 238, 227, 0.92) 45%);
+  border-top: 2px dashed #856244;
+}
+.pp__n { font-size: 12.5px; color: var(--a-mute); }
+.pp__page.is-on .pp__n { color: var(--a-ink); font-weight: 500; }
+.pp__page.is-cliff .pp__n { color: #5e4430; }
+.pp__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--a-line);
+  background: var(--a-card);
+}
+.pp__opts { display: grid; gap: 8px; }
+@media (max-width: 600px) {
+  .pp { width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0; }
+  .pp__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px 16px 16px; }
+  .pp__head, .pp__bar, .pp__foot { padding-left: 16px; padding-right: 16px; }
+  .pp__foot .a-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp[open], .pp__badge { animation: none; }
+  .pp__paper { transition: none; }
+}
