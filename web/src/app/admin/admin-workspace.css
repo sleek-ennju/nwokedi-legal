@@ -577,3 +577,16 @@
     animation: none !important;
   }
 }
+
+/* Settings → Account */
+.a-pass {
+  margin-top: 6px;
+}
+.a-pass__code {
+  max-width: 180px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.18em;
+}
+.a-pass__go {
+  align-self: end;
+}

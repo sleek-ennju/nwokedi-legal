@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import CopyField from "@/components/admin/CopyField";
+import PasswordForm from "@/components/admin/PasswordForm";
 import SettingsForm from "@/components/admin/SettingsForm";
 import { listBooksAdmin } from "@/lib/admin/books";
 import { requireAdmin } from "@/lib/admin/session";
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Settings" };
 type Check = { label: string; state: "ok" | "warn" | "off"; detail: React.ReactNode };
 
 export default async function SettingsPage() {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const [{ settings, tableReady }, { books }, h] = await Promise.all([loadSettings(), listBooksAdmin(), headers()]);
   const origin = process.env.PUBLIC_ORIGIN || `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
 
@@ -72,6 +73,8 @@ export default async function SettingsPage() {
       )}
 
       <SettingsForm settings={settings} disabled={!tableReady} />
+
+      <PasswordForm email={admin.email} />
 
       <section className="a-card a-section">
         <h2>Status</h2>
