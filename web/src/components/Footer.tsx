@@ -124,7 +124,7 @@ export default function Footer() {
             )}
           </ul>
           <ul className="foot__social" aria-label="Social profiles">
-            {SOCIALS.map((s) => {
+            {SOCIALS.filter((s) => site.social[s.key]).map((s) => {
               const url = site.social[s.key];
               const icon = (
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>

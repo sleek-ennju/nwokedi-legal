@@ -81,7 +81,7 @@ export default function CallScrub() {
       const y = sec.offsetTop + (i / (N - 1)) * span();
       const { getLenis } = await import("@/experience/scroll");
       const lenis = getLenis();
-      if (lenis) lenis.scrollTo(y, { duration: reduced ? 0 : 1.4 });
+      if (lenis) lenis.scrollTo(y, { duration: reduced ? 0 : 0.9 });
       else scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
     };
     thumbs.forEach((t) => t.addEventListener("click", () => scrollToBeat(Number(t.dataset.to))));

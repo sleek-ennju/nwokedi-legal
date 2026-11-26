@@ -423,10 +423,10 @@ em {
 /* ───────── Chapters ───────── */
 .chapters {
   position: relative;
-  /* 104vh hand-off from the hero + 4 practices × 52vh (was 104vh each: halved so
-     each next practice arrives after about half a screen of scrolling).
+  /* 104vh hand-off from the hero + 4 practices × 34vh, so each next practice
+     arrives after about a third of a screen of scrolling.
      Keep in step with HANDOFF / H in experience/scroll.ts. */
-  height: 312vh;
+  height: 240vh;
 }
 .chapters__sticky {
   position: sticky;
@@ -479,27 +479,33 @@ em {
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.7s var(--ease-out), visibility 0.7s;
+  /* leaving: quick, so two practices never sit on top of each other */
+  transition: opacity 0.16s ease-out, visibility 0.16s;
 }
 .chapter > * {
-  transform: translateY(26px);
-  transition: transform 0.9s var(--ease-out);
+  transform: translateY(14px);
+  transition: transform 0.2s var(--ease-out);
 }
 .chapter.is-active {
   opacity: 1;
   visibility: visible;
+  /* arriving: a beat after the last one has gone, then settles fast */
+  transition: opacity 0.34s var(--ease-out) 0.06s, visibility 0s;
+}
+.chapter.is-active > * {
+  transition: transform 0.42s var(--ease-out) 0.06s;
 }
 .chapter.is-active > * {
   transform: none;
 }
 .chapter.is-active > :nth-child(2) {
-  transition-delay: 0.04s;
+  transition-delay: 0.085s;
 }
 .chapter.is-active > :nth-child(3) {
-  transition-delay: 0.08s;
+  transition-delay: 0.11s;
 }
 .chapter.is-active > :nth-child(4) {
-  transition-delay: 0.12s;
+  transition-delay: 0.135s;
 }
 .chapter.is-active > :nth-child(5) {
   transition-delay: 0.16s;

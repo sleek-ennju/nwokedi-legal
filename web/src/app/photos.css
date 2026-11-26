@@ -190,7 +190,8 @@
 /* ───────── The Call (depth carousel) ───────── */
 .call {
   position: relative;
-  height: 420vh;
+  /* 3 portraits: ~75vh of scrolling from one to the next (was 160vh) */
+  height: 250vh;
   background: var(--night);
   box-shadow: 0 0 0 3px var(--night); /* same sub-pixel bleed as .principal */
 }
@@ -277,12 +278,13 @@
   position: absolute;
   inset: 0 0 auto 0;
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.6s var(--ease-out), transform 0.8s var(--ease-out);
+  transform: translateY(10px);
+  transition: opacity 0.16s ease-out, transform 0.2s ease-out;
 }
 .call__beat.is-active {
   opacity: 1;
   transform: none;
+  transition: opacity 0.32s var(--ease-out) 0.06s, transform 0.4s var(--ease-out) 0.06s;
 }
 .call__title {
   margin: 0 0 14px;

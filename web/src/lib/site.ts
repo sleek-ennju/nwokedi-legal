@@ -2,7 +2,7 @@
  * Single source of truth for firm facts. Used by the page copy, the JSON-LD
  * structured data, the sitemap and the metadata — change a fact here once.
  *
- * TODO(client): principal's full name, profiles, domain, email, address.
+ * TODO(client): address (city/state) still to come.
  * Anything left empty is simply omitted from the structured data.
  */
 export const site = {
@@ -14,22 +14,22 @@ export const site = {
   description:
     "Nwokedi Legal advises creators, founders and businesses on intellectual property, media and entertainment, corporate and commercial matters, and property in Nigeria.",
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
-  telephone: process.env.NEXT_PUBLIC_PHONE ?? "",
+  telephone: process.env.NEXT_PUBLIC_PHONE ?? "+2349044257775",
   /** direct lines shown beside the enquiry form (E.164, e.g. +2348012345678) */
   contact: {
-    phone: process.env.NEXT_PUBLIC_PHONE ?? "",
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? process.env.NEXT_PUBLIC_PHONE ?? "",
+    phone: process.env.NEXT_PUBLIC_PHONE ?? "+2349044257775",
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? process.env.NEXT_PUBLIC_PHONE ?? "+2349044257775",
   },
   address: { locality: "", region: "", country: "NG" },
   /**
-   * Social profiles — TODO(client): full profile URLs. Empty ones render as
-   * placeholders in the footer and are left out of the structured data.
+   * Social profiles (her own). Empty ones are hidden in the footer and left
+   * out of the structured data.
    */
   social: {
-    instagram: process.env.NEXT_PUBLIC_INSTAGRAM ?? "",
-    linkedin: process.env.NEXT_PUBLIC_LINKEDIN ?? "",
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM ?? "https://www.instagram.com/m_nwokedi.esq/",
+    linkedin: process.env.NEXT_PUBLIC_LINKEDIN ?? "https://www.linkedin.com/in/miriam-nwokedi-39b300346/",
     x: process.env.NEXT_PUBLIC_X ?? "",
-    tiktok: process.env.NEXT_PUBLIC_TIKTOK ?? "",
+    tiktok: process.env.NEXT_PUBLIC_TIKTOK ?? "https://www.tiktok.com/@m_nwokedi.esq",
     youtube: process.env.NEXT_PUBLIC_YOUTUBE ?? "",
   },
   get sameAs(): string[] {
@@ -43,7 +43,10 @@ export const site = {
   principal: {
     name: process.env.NEXT_PUBLIC_PRINCIPAL_NAME ?? "",
     jobTitle: "Principal",
-    sameAs: [] as string[],
+    /** the profiles are hers personally, so they also identify her in search */
+    get sameAs(): string[] {
+      return Object.values(site.social).filter(Boolean);
+    },
   },
 };
 

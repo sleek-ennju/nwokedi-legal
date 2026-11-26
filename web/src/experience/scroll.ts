@@ -10,12 +10,12 @@ let lenis: Lenis | null = null;
 export const getLenis = () => lenis;
 
 /**
- * Chapter pacing (must match `.chapters { height }` in globals.css: 312vh).
+ * Chapter pacing (must match `.chapters { height }` in globals.css: 240vh).
  * The section's scroll range = its height. The first 104vh is the hand-off from
- * the hero (the section scrolling into view); then four practices of 52vh each.
- * In timeline units one practice = 1, so the hand-off is H = 2 (104 / 52).
+ * the hero (the section scrolling into view); then four practices of 34vh each.
+ * In timeline units one practice = 1, so the hand-off is H = 104 / 34.
  */
-const H = 2;
+const H = 104 / 34;
 const HANDOFF = H / (H + 4); // share of the scroll range spent on the hand-off (= 1/3)
 
 /** Scroll to a practice chapter by index (lands mid-chapter, inside the pinned range). */
@@ -23,7 +23,7 @@ export function scrollToChapter(idx: number) {
   const sec = document.querySelector<HTMLElement>(".chapters");
   if (!sec) return;
   const y = sec.offsetTop - innerHeight + sec.offsetHeight * (HANDOFF + (1 - HANDOFF) * ((idx + 0.5) / 4));
-  if (lenis) lenis.scrollTo(y, { duration: 2 });
+  if (lenis) lenis.scrollTo(y, { duration: 1.4 });
   else scrollTo({ top: y, behavior: "smooth" });
 }
 
@@ -131,7 +131,8 @@ export function initScroll() {
         trigger: ".chapters",
         start: "top bottom",
         end: "bottom bottom",
-        scrub: reduced ? true : 1.1,
+        // light smoothing only: the practice switch reads the smoothed progress, so a long scrub made it lag
+        scrub: reduced ? true : 0.45,
         invalidateOnRefresh: true,
         onUpdate: (st) => {
           // the hand-off from the hero, then 4 equal chapters
