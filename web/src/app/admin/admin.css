@@ -1075,6 +1075,45 @@ a.a-card:hover {
 .a-restart button:hover {
   color: var(--a-ink);
 }
+.a-restart a,
+.a-login__forgot a {
+  color: var(--a-mute);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.a-restart a:hover,
+.a-login__forgot a:hover {
+  color: var(--a-ink);
+}
+/* "Forgot your password?" sits under the password field, right-aligned */
+.a-login__forgot {
+  margin: -6px 0 4px;
+  text-align: right;
+  font-size: 13px;
+}
+.a-login__note {
+  color: var(--a-mute);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.a-login__hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--a-mute);
+}
+.a-login__hint--err,
+.a-login [aria-invalid="true"] + .a-login__hint {
+  color: var(--a-bad);
+}
+.a-login__check {
+  margin: -2px 0 16px;
+}
+.a-login a.a-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .admin *,

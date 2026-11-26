@@ -17,6 +17,10 @@ import { db } from "@/lib/db/supabase";
  *
  * The signing key is derived from the service-role key, so no extra secret is
  * needed, and rotating that key also signs everyone out.
+ *
+ * "Sign out everywhere": each cookie carries when it was issued (iat). When the
+ * password changes or is reset, we record that moment per admin (settings key
+ * `admin_sessions`), and any cookie issued before it stops working.
  */
 
 export const SESSION_COOKIE = "nl_admin";
@@ -64,7 +68,8 @@ export const cookieOptions = (maxAgeSeconds: number) => ({
 export async function startSession(userId: string, email: string, name?: string) {
   const exp = Date.now() + SESSION_HOURS * 3600_000;
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, sign({ uid: userId, email, name: name || undefined, exp }), cookieOptions(SESSION_HOURS * 3600));
+  const iat = Date.now();
+  jar.set(SESSION_COOKIE, sign({ uid: userId, email, name: name || undefined, iat, exp }), cookieOptions(SESSION_HOURS * 3600));
   jar.delete({ name: PENDING_COOKIE, path: "/admin" });
 }
 
@@ -88,14 +93,40 @@ export async function isAdminUser(userId: string): Promise<boolean> {
   return Boolean(data);
 }
 
+const REVOKED = "admin_sessions";
+
+/** When this admin last signed out everywhere (ms), or 0. */
+async function sessionsValidAfter(userId: string): Promise<number> {
+  const c = db();
+  if (!c) return 0;
+  const { data } = await c.from("settings").select("value").eq("key", REVOKED).maybeSingle();
+  const at = (data?.value as Record<string, number> | undefined)?.[userId];
+  return typeof at === "number" ? at : 0;
+}
+
+/**
+ * Ends every dashboard session this admin has, on every device. Call
+ * startSession straight after to keep the current device signed in.
+ */
+export async function signOutEverywhere(userId: string): Promise<boolean> {
+  const c = db();
+  if (!c) return false;
+  const { data } = await c.from("settings").select("value").eq("key", REVOKED).maybeSingle();
+  const value = { ...((data?.value as Record<string, number> | undefined) ?? {}), [userId]: Date.now() };
+  const { error } = await c.from("settings").upsert({ key: REVOKED, value });
+  if (error) console.error("[admin] signOutEverywhere", error.message);
+  return !error;
+}
+
 export type Admin = { id: string; email: string; name?: string };
 
 /** The signed-in admin for this request, or null. Deduplicated per request. */
 export const getAdmin = cache(async (): Promise<Admin | null> => {
   await connection(); // the expiry check reads the clock: always at request time
-  const s = unsign<{ uid: string; email: string; name?: string }>((await cookies()).get(SESSION_COOKIE)?.value);
+  const s = unsign<{ uid: string; email: string; name?: string; iat?: number }>((await cookies()).get(SESSION_COOKIE)?.value);
   if (!s) return null;
-  if (!(await isAdminUser(s.uid))) return null;
+  const [isAdmin, after] = await Promise.all([isAdminUser(s.uid), sessionsValidAfter(s.uid)]);
+  if (!isAdmin || (s.iat ?? 0) < after) return null;
   return { id: s.uid, email: s.email, name: s.name };
 });
 

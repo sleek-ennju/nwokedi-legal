@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { authClient, requireAdmin } from "@/lib/admin/session";
+import { authClient, requireAdmin, signOutEverywhere, startSession } from "@/lib/admin/session";
 
 export type PasswordState = { ok: boolean; message: string; errors?: Record<string, string> } | null;
 
@@ -11,6 +11,7 @@ const slow = () => new Promise((r) => setTimeout(r, 400 + Math.random() * 400));
  * Change the signed-in admin's password. Needs the current password AND a
  * fresh authenticator code, so an unlocked laptop alone can't take over the
  * account. The change is made on a session that has just passed both checks.
+ * Afterwards every other device is signed out; this one gets a fresh session.
  */
 export async function changePassword(_prev: PasswordState, form: FormData): Promise<PasswordState> {
   const admin = await requireAdmin();
@@ -50,7 +51,16 @@ export async function changePassword(_prev: PasswordState, form: FormData): Prom
       console.error("[admin] password change", updateError.message);
       return { ok: false, message: /weak|pwned|leak/i.test(updateError.message) ? "That password is too easy to guess. Try a longer one." : "Couldn't change the password. Please try again." };
     }
-    return { ok: true, message: "Use your new password from your next sign-in." };
+    // end every session: Supabase's (other half-finished sign-ins) and ours (other devices)
+    await c.auth.signOut({ scope: "global" });
+    const revoked = await signOutEverywhere(admin.id);
+    await startSession(admin.id, admin.email, admin.name);
+    return {
+      ok: true,
+      message: revoked
+        ? "Any other device signed in to the dashboard has been signed out. Use your new password from now on."
+        : "Use your new password from now on.",
+    };
   } finally {
     await c.auth.signOut({ scope: "local" });
   }

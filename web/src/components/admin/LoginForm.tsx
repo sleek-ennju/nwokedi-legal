@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { authStep, type AuthState } from "@/app/admin/actions/auth";
 
@@ -53,6 +54,9 @@ export default function LoginForm() {
               Password
               <input className="a-input" name="password" type="password" autoComplete="current-password" required />
             </label>
+            <p className="a-login__forgot">
+              <Link href="/admin/forgot">Forgot your password?</Link>
+            </p>
           </>
         ) : (
           <label className="a-field">
