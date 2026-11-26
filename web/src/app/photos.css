@@ -190,8 +190,10 @@
 /* ───────── The Call (depth carousel) ───────── */
 .call {
   position: relative;
-  /* 3 portraits: ~75vh of scrolling from one to the next (was 160vh) */
-  height: 250vh;
+  /* 3 portraits: ~55vh of scrolling from one to the next.
+     The scrub measures against .call__sticky (100svh), not the window, so
+     Chrome's address bar sliding in and out never nudges the portraits. */
+  height: 210vh;
   background: var(--night);
   box-shadow: 0 0 0 3px var(--night); /* same sub-pixel bleed as .principal */
 }
@@ -247,6 +249,24 @@
     0 50px 90px -30px rgba(0, 0, 0, 0.75),
     0 0 0 1px rgba(241, 217, 168, calc(0.16 - var(--d) * 0.12));
 }
+/* phones: an animated blur radius re-filters three large photos every frame, the
+   costliest thing on Android Chrome. Depth there is a dark veil instead: opacity
+   only, which the GPU composites for free. Desktop keeps the true depth of field. */
+@media (pointer: coarse) {
+  .call__card {
+    will-change: transform;
+    filter: none;
+  }
+  .call__card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #0d0805;
+    opacity: calc(var(--d) * 0.42);
+    pointer-events: none;
+  }
+}
 .call__card img {
   object-fit: cover;
   -webkit-user-drag: none;
@@ -279,12 +299,17 @@
   inset: 0 0 auto 0;
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.16s ease-out, transform 0.2s ease-out;
+  transition: opacity 0.14s ease-out, transform 0.18s ease-out;
 }
 .call__beat.is-active {
   opacity: 1;
   transform: none;
-  transition: opacity 0.32s var(--ease-out) 0.06s, transform 0.4s var(--ease-out) 0.06s;
+  transition: opacity 0.28s var(--ease-out) 0.04s, transform 0.36s var(--ease-out) 0.04s;
+}
+/* once the scrub runs, each caption's fade is driven by the same scroll value as its
+   portrait's focus (CallScrub), so the words land exactly as the photo turns sharp */
+.call.is-scrubbed .call__beat {
+  transition: none;
 }
 .call__title {
   margin: 0 0 14px;

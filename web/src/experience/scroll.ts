@@ -5,24 +5,35 @@ import { NAV_OFFSET, SMOOTH_SCROLL } from "@/lib/smooth-scroll";
 import { K, L, P, S, vis } from "./state";
 
 gsap.registerPlugin(ScrollTrigger);
+// phones: the address bar sliding in/out resizes the window; re-measuring every
+// trigger then makes pinned sections jump. Real resizes (rotation) still refresh.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 let lenis: Lenis | null = null;
 export const getLenis = () => lenis;
 
 /**
- * Chapter pacing (must match `.chapters { height }` in globals.css: 240vh).
- * The section's scroll range = its height. The first 104vh is the hand-off from
- * the hero (the section scrolling into view); then four practices of 34vh each.
- * In timeline units one practice = 1, so the hand-off is H = 104 / 34.
+ * Chapter pacing, in vh of scrolling (TOTAL must match `.chapters { height }` in
+ * globals.css: 198vh). The first 104vh is the hand-off from the hero: the section
+ * sliding up into view, with the first practice already showing. So the first
+ * practice only holds briefly once pinned (FIRST), the middle two get STEP each,
+ * and the last one LAST, so every practice feels the same length to the reader.
+ * The timeline below runs in the same vh units.
  */
-const H = 104 / 34;
-const HANDOFF = H / (H + 4); // share of the scroll range spent on the hand-off (= 1/3)
+const HAND = 104;
+const FIRST = 12;
+const STEP = 26;
+const LAST = 30;
+const TOTAL = HAND + FIRST + STEP * 2 + LAST;
+/** pinned offsets (vh) where practices 2, 3 and 4 take over */
+const BOUNDS = [FIRST, FIRST + STEP, FIRST + STEP * 2];
+const MIDS = [FIRST / 2, FIRST + STEP / 2, FIRST + STEP * 1.5, FIRST + STEP * 2 + LAST / 2];
 
 /** Scroll to a practice chapter by index (lands mid-chapter, inside the pinned range). */
 export function scrollToChapter(idx: number) {
   const sec = document.querySelector<HTMLElement>(".chapters");
   if (!sec) return;
-  const y = sec.offsetTop - innerHeight + sec.offsetHeight * (HANDOFF + (1 - HANDOFF) * ((idx + 0.5) / 4));
+  const y = sec.offsetTop - innerHeight + sec.offsetHeight * ((HAND + MIDS[idx]) / TOTAL);
   if (lenis) lenis.scrollTo(y, { duration: 1.4 });
   else scrollTo({ top: y, behavior: "smooth" });
 }
@@ -136,22 +147,22 @@ export function initScroll() {
         invalidateOnRefresh: true,
         onUpdate: (st) => {
           // the hand-off from the hero, then 4 equal chapters
-          const p = (st.progress - HANDOFF) / (1 - HANDOFF);
-          setActive(p < 0 ? 0 : Math.min(3, Math.floor(p * 4)));
-          if (fill) fill.style.transform = `scaleY(${gsap.utils.clamp(0, 1, p)})`;
+          const pinned = st.progress * TOTAL - HAND; // vh scrolled since the section pinned
+          setActive(BOUNDS.filter((b) => pinned >= b).length);
+          if (fill) fill.style.transform = `scaleY(${gsap.utils.clamp(0, 1, pinned / (TOTAL - HAND))})`;
         },
       },
     });
 
-    // timeline: hand-off 0→H, then practice k spans H+k → H+k+1; each coin-turn is
-    // centred on the boundary between two practices (H+k ± 0.3), ending at H+4.
-    tl.to(S, { x: side.x, y: side.y, scale: side.scale, rotY: turns[0], duration: H }, 0)
-      .to(".mark", { opacity: 0.35, duration: H }, 0)
-      .to(".fallback", { opacity: 0, duration: H * 0.6 }, 0)
-      .to(S, { rotY: turns[1], rotX: 0.06, duration: 0.6, ease: "power2.inOut" }, H + 0.7)
-      .to(S, { rotY: turns[2], rotX: -0.05, duration: 0.6, ease: "power2.inOut" }, H + 1.7)
-      .to(S, { rotY: turns[3], rotX: 0.0, duration: 0.6, ease: "power2.inOut" }, H + 2.7)
-      .to({}, { duration: 0.7 }, H + 3.3);
+    // each coin-turn is centred on a practice boundary; the empty tween sets the length
+    const TURN = STEP * 0.6;
+    tl.to({}, { duration: TOTAL }, 0)
+      .to(S, { x: side.x, y: side.y, scale: side.scale, rotY: turns[0], duration: HAND }, 0)
+      .to(".mark", { opacity: 0.35, duration: HAND }, 0)
+      .to(".fallback", { opacity: 0, duration: HAND * 0.6 }, 0);
+    BOUNDS.forEach((b, k) =>
+      tl.to(S, { rotY: turns[k + 1], rotX: [0.06, -0.05, 0][k], duration: TURN, ease: "power2.inOut" }, HAND + b - TURN / 2)
+    );
 
     gsap.fromTo(
       K,

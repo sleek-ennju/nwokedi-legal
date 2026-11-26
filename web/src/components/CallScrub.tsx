@@ -21,13 +21,25 @@ export default function CallScrub() {
     const count = sec.querySelector<HTMLElement>(".call__count b");
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const N = cards.length;
+    /** how far (in portraits) from the front a caption starts to show */
+    const CAPTION_REACH = 0.32;
+    sec.classList.add("is-scrubbed");
 
     let raf = 0,
       visible = false,
       active = -1,
       shown = -1; // last rendered "a", to skip identical frames
 
-    const span = () => Math.max(1, sec.offsetHeight - innerHeight);
+    const sticky = sec.querySelector<HTMLElement>(".call__sticky")!;
+    // measured against the pinned frame (100svh), not the window: the address bar
+    // sliding in and out on phones changes innerHeight mid-scroll, which made the
+    // portraits nudge; svh never changes
+    const span = () => Math.max(1, sec.offsetHeight - sticky.offsetHeight);
+    // phones scroll natively (no Lenis smoothing), and touch scroll arrives in uneven
+    // steps; ease toward the finger over ~70ms so the row glides instead of ticking
+    const touch = matchMedia("(pointer: coarse)").matches && !reduced;
+    const TAU_MS = 70;
+    let lastT = 0;
     const progress = () => clamp(-sec.getBoundingClientRect().top / span());
 
     /** progress 0..1 → active position 0..N-1, holding still on each portrait */
@@ -53,10 +65,21 @@ export default function CallScrub() {
         c.style.setProperty("--d", Math.min(1.4, Math.pow(ad, 0.7)).toFixed(3));
         c.style.zIndex = String(100 - Math.round(ad * 10));
       });
+      // captions follow their portrait: fully legible only once it is sharp and in
+      // front, beginning to appear as it steps forward (same "a" as the blur above)
+      beats.forEach((b, i) => {
+        const o = 1 - smooth(clamp(Math.abs(i - a) / CAPTION_REACH));
+        b.style.opacity = o.toFixed(3);
+        b.style.transform = `translate3d(0,${((1 - o) * 10).toFixed(1)}px,0)`;
+        b.style.visibility = o < 0.01 ? "hidden" : "visible";
+      });
       const idx = Math.round(a);
       if (idx !== active) {
         active = idx;
-        beats.forEach((b, i) => b.classList.toggle("is-active", i === idx));
+        beats.forEach((b, i) => {
+          b.classList.toggle("is-active", i === idx);
+          b.setAttribute("aria-hidden", String(i !== idx));
+        });
         thumbs.forEach((t, i) => {
           t.classList.toggle("is-active", i === idx);
           t.setAttribute("aria-pressed", String(i === idx));
@@ -65,10 +88,17 @@ export default function CallScrub() {
       }
     };
 
-    const tick = () => {
+    const tick = (t: number) => {
       raf = 0;
       if (!visible) return;
-      const a = toActive(progress());
+      const target = toActive(progress());
+      let a = target;
+      if (touch && shown >= 0) {
+        const dt = Math.min(64, t - (lastT || t));
+        a = shown + (target - shown) * (1 - Math.exp(-dt / TAU_MS));
+        if (Math.abs(target - a) < 0.0005) a = target;
+      }
+      lastT = t;
       if (Math.abs(a - shown) > 0.0005) {
         shown = a;
         render(a);

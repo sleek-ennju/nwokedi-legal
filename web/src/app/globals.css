@@ -224,6 +224,18 @@ a {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+/* phones: a live backdrop blur re-renders on every scrolled frame (a known cause of
+   jank in Chrome on Android), so the glass becomes a near-solid tint instead */
+@media (pointer: coarse) {
+  .nav--scrolled::before {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(14, 12, 12, 0.86);
+  }
+  .nav--scrolled.nav--ink::before {
+    background: rgba(246, 242, 233, 0.94);
+  }
+}
 .nav__brand {
   display: grid;
 }
@@ -423,10 +435,9 @@ em {
 /* ───────── Chapters ───────── */
 .chapters {
   position: relative;
-  /* 104vh hand-off from the hero + 4 practices × 34vh, so each next practice
-     arrives after about a third of a screen of scrolling.
-     Keep in step with HANDOFF / H in experience/scroll.ts. */
-  height: 240vh;
+  /* 104vh hand-off from the hero (practice 1 already showing as it slides in),
+     then 12 + 26 + 26 + 30vh pinned. Keep in step with TOTAL in experience/scroll.ts. */
+  height: 198vh;
 }
 .chapters__sticky {
   position: sticky;
@@ -480,35 +491,35 @@ em {
   opacity: 0;
   visibility: hidden;
   /* leaving: quick, so two practices never sit on top of each other */
-  transition: opacity 0.16s ease-out, visibility 0.16s;
+  transition: opacity 0.14s ease-out, visibility 0.14s;
 }
 .chapter > * {
-  transform: translateY(14px);
-  transition: transform 0.2s var(--ease-out);
+  transform: translateY(12px);
+  transition: transform 0.18s var(--ease-out);
 }
 .chapter.is-active {
   opacity: 1;
   visibility: visible;
   /* arriving: a beat after the last one has gone, then settles fast */
-  transition: opacity 0.34s var(--ease-out) 0.06s, visibility 0s;
+  transition: opacity 0.28s var(--ease-out) 0.04s, visibility 0s;
 }
 .chapter.is-active > * {
-  transition: transform 0.42s var(--ease-out) 0.06s;
+  transition: transform 0.36s var(--ease-out) 0.04s;
 }
 .chapter.is-active > * {
   transform: none;
 }
 .chapter.is-active > :nth-child(2) {
-  transition-delay: 0.085s;
+  transition-delay: 0.06s;
 }
 .chapter.is-active > :nth-child(3) {
-  transition-delay: 0.11s;
+  transition-delay: 0.08s;
 }
 .chapter.is-active > :nth-child(4) {
-  transition-delay: 0.135s;
+  transition-delay: 0.1s;
 }
 .chapter.is-active > :nth-child(5) {
-  transition-delay: 0.16s;
+  transition-delay: 0.12s;
 }
 .chapter h2 {
   margin: 0;
