@@ -53,10 +53,13 @@ export default function ConsultForm() {
   return (
     <form className="consult__form" action={action} onFocus={onFirstFocus} noValidate>
       <input type="hidden" name="started_at" ref={startedAt} defaultValue="" />
+      {/* bot trap. display:none, not off-screen: Chrome autofills off-screen fields
+          (it once filled this as "Company website" and a real enquiry was dropped),
+          but never hidden ones, while simple bots still fill every input they find */}
       <div className="hp" aria-hidden="true">
         <label>
-          Company website
-          <input name="company_website" tabIndex={-1} autoComplete="off" />
+          Leave this empty
+          <input name="nl_check" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
 

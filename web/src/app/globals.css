@@ -867,11 +867,7 @@ a:focus-visible {
   color: rgba(22, 37, 61, 0.78);
 }
 .hp {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  display: none;
 }
 @media (max-width: 860px) {
   .consult__inner,

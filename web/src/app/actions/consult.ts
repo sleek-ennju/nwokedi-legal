@@ -56,10 +56,31 @@ export async function submitConsultation(_prev: ConsultState, form: FormData): P
     return { status: "error", message: "Please check the highlighted fields.", fieldErrors: fe, values };
   }
 
-  // bots: a valid-looking form with the honeypot filled, or completed faster than
-  // a human could type it (≥4 fields in under 3 s) → accept silently, send nothing
+  // bots: a valid-looking form with the trap filled, or completed faster than a
+  // human could type it (≥4 fields in under 3 s). It looks accepted and is saved
+  // straight to Archived with the reason, without pinging her, so a real person
+  // caught by mistake can still be found.
   const started = Number(form.get("started_at") || 0);
-  if (form.get("company_website") || (started > 0 && Date.now() - started < 3000)) {
+  const tookMs = started > 0 ? Date.now() - started : null;
+  const trap = form.get("nl_check")
+    ? "a hidden anti-spam field was filled in"
+    : tookMs !== null && tookMs < 3000
+      ? `the form was completed in ${(tookMs / 1000).toFixed(1)}s`
+      : null;
+  if (trap) {
+    const d = parsed.data;
+    const area = practices.find((p) => p.id === d.practice)?.name ?? "Not sure yet";
+    console.warn(`[consult] held by the spam filter (${trap}); saved to Archived`);
+    await saveEnquiry(
+      {
+        name: d.name,
+        email: d.email,
+        phone: d.phone,
+        practice: area,
+        message: `[Held by the spam filter: ${trap}. If this is a real person, reply as normal.]\n\n${d.message}`,
+      },
+      { archived: true }
+    );
     return { status: "ok" };
   }
 

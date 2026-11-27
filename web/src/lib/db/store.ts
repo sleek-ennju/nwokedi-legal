@@ -54,10 +54,12 @@ export async function recordEvent(e: EventRow): Promise<void> {
 
 export type EnquiryRow = { name: string; email: string; phone?: string; practice: string; message: string };
 
-export async function saveEnquiry(e: EnquiryRow): Promise<boolean> {
+export async function saveEnquiry(e: EnquiryRow, opts: { archived?: boolean } = {}): Promise<boolean> {
   const c = db();
   if (!c) return false;
-  const { error } = await c.from("enquiries").insert({ ...e, email: e.email.toLowerCase(), phone: e.phone || null });
+  const { error } = await c
+    .from("enquiries")
+    .insert({ ...e, email: e.email.toLowerCase(), phone: e.phone || null, ...(opts.archived ? { status: "archived" } : {}) });
   if (error) console.error("[db] saveEnquiry", error.message);
   return !error;
 }
