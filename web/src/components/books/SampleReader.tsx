@@ -79,7 +79,7 @@ export default function SampleReader({ slug, title, pages, buyLabel, onBuy, disa
         <div className={`leaf leaf--${side} leaf--end`} key="end">
           <p className="eyebrow eyebrow--ink">End of sample</p>
           <p className="leaf__end-title">Keep reading {title}.</p>
-          <p className="leaf__end-body">The full book is delivered to your email the moment payment is confirmed.</p>
+          <p className="leaf__end-body">Download the full book the moment payment is confirmed. We&rsquo;ll email you the link too.</p>
           <button
             type="button"
             className="button button--ink"

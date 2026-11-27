@@ -44,7 +44,7 @@ export default async function BooksPage() {
           </h1>
           <p className="store__lede">
             Practical guides on intellectual property, creative deals and property — written to be used, not shelved. Read
-            a sample, then have your copy delivered to your inbox in moments.
+            a sample, then download your copy the moment you&rsquo;ve paid.
           </p>
         </header>
 
@@ -90,7 +90,7 @@ export default async function BooksPage() {
           {[
             ["Read first", "Every book opens with a free sample — the real pages, not a summary."],
             ["Pay securely", "Card, bank transfer or USSD through Paystack. Naira or dollars."],
-            ["Delivered instantly", "A secure download link arrives in your inbox the moment payment clears."],
+            ["Yours instantly", "Download it as soon as payment clears, and keep the copy of the link we email you."],
           ].map(([t, d], i) => (
             <div className="promise" key={t}>
               <span className="promise__n">0{i + 1}</span>

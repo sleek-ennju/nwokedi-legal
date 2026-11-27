@@ -141,7 +141,7 @@ export default function BuyPanel({ book, available }: Props) {
         </button>
         <SampleReader slug={slug} title={title} pages={book.sample} buyLabel={label} onBuy={openSheet} disabled={!available} />
       </div>
-      <p className="buy__note">Instant delivery: a secure download link is emailed to you as soon as payment is confirmed.</p>
+      <p className="buy__note">Instant download: your book is ready the moment payment is confirmed, and we email you the link too.</p>
 
       <dialog
         className={`co${closing ? " is-closing" : ""}${drag ? " is-dragging" : ""}`}
@@ -191,7 +191,7 @@ export default function BuyPanel({ book, available }: Props) {
               <span>2</span>Pay securely
             </li>
             <li>
-              <span>3</span>In your inbox
+              <span>3</span>Download
             </li>
           </ol>
 
@@ -226,7 +226,7 @@ export default function BuyPanel({ book, available }: Props) {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="Where we'll send your book"
+                  placeholder="We'll email your link here too"
                   defaultValue={v.email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setEmailTouched(true)}
