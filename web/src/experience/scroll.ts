@@ -1,7 +1,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { NAV_OFFSET, SMOOTH_SCROLL } from "@/lib/smooth-scroll";
+import { NAV_OFFSET, SMOOTH_SCROLL, touchFirst } from "@/lib/smooth-scroll";
 import { K, L, P, S, vis } from "./state";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -47,7 +47,8 @@ export function initScroll() {
   const root = document.documentElement;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (!reduced) {
+  // desktop only: phones scroll natively (see touchFirst in lib/smooth-scroll.ts), and ScrollTrigger follows that
+  if (!reduced && !touchFirst()) {
     // shared feel (lib/smooth-scroll.ts); GSAP's ticker drives the single animation loop
     lenis = new Lenis({ ...SMOOTH_SCROLL, autoRaf: false });
     (window as unknown as { __lenis?: Lenis }).__lenis = lenis;

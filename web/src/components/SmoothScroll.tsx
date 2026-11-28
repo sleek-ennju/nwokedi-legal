@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Lenis from "lenis";
-import { SMOOTH_SCROLL } from "@/lib/smooth-scroll";
+import { SMOOTH_SCROLL, touchFirst } from "@/lib/smooth-scroll";
 
 /**
  * Smooth scrolling for the public pages that don't run the home page's scroll
@@ -17,7 +17,7 @@ export default function SmoothScroll() {
   const enabled = path !== "/" && !path.startsWith("/admin");
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || touchFirst()) return; // phones keep native scrolling
     const l = new Lenis({ ...SMOOTH_SCROLL, autoRaf: true });
     lenis.current = l;
     // sheets and readers pause the page behind them

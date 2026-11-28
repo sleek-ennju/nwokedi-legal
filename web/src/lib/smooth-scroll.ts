@@ -12,6 +12,14 @@ import type { LenisOptions } from "lenis";
  */
 export const NAV_OFFSET = 88;
 
+/**
+ * Phones and tablets get the browser's own scrolling: Lenis is never started on them. On a phone the toolbar slides
+ * in and out as you scroll (a window resize), and Lenis re-measuring on it cut iOS momentum short, which read as a
+ * snap or a jump, worst scrolling back up. syncTouch: false alone wasn't enough. GSAP ScrollTrigger still runs on
+ * phones (the home page story needs it) and follows native scroll, with ignoreMobileResize on.
+ */
+export const touchFirst = () => matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 export const SMOOTH_SCROLL: LenisOptions = {
   lerp: 0.085,
   smoothWheel: true,
